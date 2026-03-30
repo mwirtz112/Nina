@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SWE 2026 CEO Flashcards</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #0f0f13;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: #fff;
+      gap: 32px;
+      padding: 24px;
+    }
+
+    .counter {
+      font-size: 14px;
+      color: #888;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .scene {
+      width: min(420px, 90vw);
+      height: min(520px, 70vh);
+      perspective: 1200px;
+      cursor: pointer;
+    }
+
+    .card {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.55s cubic-bezier(0.4, 0.2, 0.2, 1);
+      border-radius: 20px;
+    }
+
+    .card.flipped {
+      transform: rotateY(180deg);
+    }
+
+    .card-face {
+      position: absolute;
+      inset: 0;
+      border-radius: 20px;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      overflow: hidden;
+    }
+
+    /* Front: photo */
+    .card-front {
+      background: #1a1a22;
+      border: 1px solid #2a2a35;
+    }
+
+    .card-front img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .card-front .no-image {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 80px;
+      background: linear-gradient(135deg, #1a1a22 0%, #252535 100%);
+      color: #3a3a50;
+    }
+
+    .flip-hint {
+      position: absolute;
+      bottom: 16px;
+      right: 16px;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(8px);
+      color: rgba(255,255,255,0.6);
+      font-size: 11px;
+      padding: 5px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.05em;
+      pointer-events: none;
+    }
+
+    /* Back: info */
+    .card-back {
+      background: linear-gradient(145deg, #1c1c28 0%, #13131d 100%);
+      border: 1px solid #2a2a40;
+      transform: rotateY(180deg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 32px;
+      text-align: center;
+      gap: 16px;
+    }
+
+    .card-back .company {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #7c6af5;
+      background: rgba(124, 106, 245, 0.1);
+      padding: 5px 14px;
+      border-radius: 20px;
+      border: 1px solid rgba(124, 106, 245, 0.25);
+    }
+
+    .card-back .name {
+      font-size: clamp(22px, 5vw, 30px);
+      font-weight: 700;
+      line-height: 1.2;
+      color: #fff;
+    }
+
+    .card-back .title {
+      font-size: clamp(13px, 2.5vw, 15px);
+      color: #9090a8;
+      line-height: 1.5;
+      max-width: 320px;
+    }
+
+    .divider {
+      width: 40px;
+      height: 2px;
+      background: linear-gradient(90deg, #7c6af5, #a78bfa);
+      border-radius: 2px;
+    }
+
+    /* Navigation */
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .nav-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: 1px solid #2a2a40;
+      background: #1a1a28;
+      color: #fff;
+      font-size: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, border-color 0.2s, transform 0.1s;
+      user-select: none;
+    }
+
+    .nav-btn:hover {
+      background: #252535;
+      border-color: #7c6af5;
+    }
+
+    .nav-btn:active {
+      transform: scale(0.93);
+    }
+
+    .nav-btn:disabled {
+      opacity: 0.3;
+      cursor: default;
+    }
+
+    .progress {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+      justify-content: center;
+      max-width: min(420px, 90vw);
+    }
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #2a2a40;
+      transition: background 0.2s;
+      cursor: pointer;
+    }
+
+    .dot.active {
+      background: #7c6af5;
+    }
+
+    .hint {
+      font-size: 12px;
+      color: #555;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="counter">
+    Card <span id="current">1</span> of <span id="total">0</span>
+  </div>
+
+  <div class="scene" id="scene" onclick="flipCard()">
+    <div class="card" id="card">
+      <div class="card-face card-front" id="front">
+        <img id="photo" src="" alt="" />
+        <div class="flip-hint">click to flip</div>
+      </div>
+      <div class="card-face card-back" id="back">
+        <div class="company" id="b-company"></div>
+        <div class="divider"></div>
+        <div class="name" id="b-name"></div>
+        <div class="title" id="b-title"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav">
+    <button class="nav-btn" id="prevBtn" onclick="go(-1)">&#8592;</button>
+    <button class="nav-btn" id="nextBtn" onclick="go(1)">&#8594;</button>
+  </div>
+
+  <div class="progress" id="dots"></div>
+
+  <div class="hint">Use ← → arrow keys to navigate</div>
+
+<script>
+const data = [
+  {"company":"Aetna","name":"Steve Nelson","title":"Executive Vice President, CVS Health and President, Aetna","image":"https://s.hdnux.com/photos/01/45/40/54/26610474/5/1920x0.jpg"},
+  {"company":"AlixPartners","name":"David Garfield","title":"Co-CEO","image":"https://media.licdn.com/dms/image/v2/D5603AQGErsk5hyH2UQ/profile-displayphoto-scale_400_400/B56Zh2Bm9iHkAs-/0/1754326796558?e=1776297600&v=beta&t=_ilShSXeEJku_IosOTIzrexbKR-7dYITzpwP0MyK-TY"},
+  {"company":"AlixPartners","name":"Simon Freakley","title":"Executive Chairman","image":"https://media.licdn.com/dms/image/v2/D5603AQES7MefXOJuNg/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1722288835416?e=1776297600&v=beta&t=g5gKIkeERMtgEouZXWU5eLYbd66odwg2-QRfk94radM"},
+  {"company":"Allstate","name":"Tom Wilson","title":"Chair, President and CEO","image":"https://s3.amazonaws.com/brt.org/Tom-Wilson.jpg"},
+  {"company":"Amazon","name":"Albert Cheng","title":"Head of AI Studios, Amazon MGM Studios","image":"https://deadline.com/wp-content/uploads/2022/09/AlbertCheng.png?w=1024"},
+  {"company":"Amazon","name":"Jamie Gorelick","title":"Lead Independent Director","image":"https://s2.q4cdn.com/299287126/files/images/board/Gorelick.jpg"},
+  {"company":"Amazon","name":"Jason Buechel","title":"Vice President, Amazon Worldwide Grocery Stores; CEO, Whole Foods Market","image":"https://assets1.chainstoreage.com/2025-01/innerview-leadership-e-team-jason-buechel-1121-1200x800-srgb_1.jpg?VersionId=UFU61gw5l0I4sH6_IGFShKQMh5NuAyZJ"},
+  {"company":"Anthropic PBC","name":"Jack Clark","title":"Cofounder and Head of Public Benefit","image":"https://i0.wp.com/jack-clark.net/wp-content/uploads/2025/08/DSC_5059.jpg?resize=1007%2C1536&ssl=1"},
+  {"company":"Aon","name":"Greg Case","title":"President & CEO","image":"https://media.licdn.com/dms/image/v2/D5603AQEh0u0esuR9mQ/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1720621911328?e=1776297600&v=beta&t=5OCvExGWrRMLxZDq2aorsaQ-VhaaVga-kLlJKPQR_4c"},
+  {"company":"Ariel Investments","name":"John Rogers, Jr.","title":"Founder, Chairman & Co-CEO","image":"https://thrive.princeton.edu/wp-content/uploads/2019/07/rogers.jpg"},
+  {"company":"Audible","name":"Don Katz","title":"Founder","image":"https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/DON_KATZ.jpg/960px-DON_KATZ.jpg"},
+  {"company":"Bain Capital","name":"David Gross","title":"Managing Partner","image":"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRCdR-W2XiSDGrTko_ELtx4WuYyVk27H-leCA&s"},
+  {"company":"Baker Hughes","name":"Lorenzo Simonelli","title":"Chairman & CEO","image":"https://www.bakerhughes.com/sites/bakerhughes/files/2023-02/lorenzo_simonelli_crop_4.jpg"},
+  {"company":"Bank of America","name":"Claudio Irigoyen","title":"Managing Director - Head of Global Economics","image":"https://media.licdn.com/dms/image/v2/C4D03AQGEWhlCzQApuw/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1609297200876?e=1776297600&v=beta&t=lhFs3qhcXMv1TZcUsH93ZXSuTc9qXZtcqj0BBLBF6tA"},
+  {"company":"Bank of America","name":"Hari Gopalkrishnan","title":"Chief Technology and Information Officer","image":"https://media.licdn.com/dms/image/v2/D4E03AQEaOTF9hqd90g/profile-displayphoto-scale_400_400/B4EZo8MeYSIIAg-/0/1761946495919?e=1776297600&v=beta&t=GiLf5MepP8rbGL-QpNNyxVk2bIiuRYSsmxU06Y1qL68"},
+  {"company":"Bayer","name":"Bill Anderson","title":"CEO","image":"https://pmlive.com/wp-content/uploads/2024/01/Bill_Anderson.jpeg"},
+  {"company":"BCG","name":"Aparna Bharadwaj","title":"Managing Director & Senior Partner; Global Leader, Global Advantage Practice","image":"https://web-assets.bcg.com/dims4/default/3d5bffb/2147483647/strip/true/crop/500x500+0+0/resize/500x500!/format/webp/quality/90/?url=http%3A%2F%2Fboston-consulting-group-brightspot.s3.amazonaws.com%2Fd8%2Fb2%2F3ab3e12347a4a713bfbfa28538e2%2Faparna-headshot-new-500-x-500.jpg"},
+  {"company":"BCG","name":"Christine Barton","title":"Managing Director & Senior Partner; North America Lead, CEO Advisory","image":"https://web-assets.bcg.com/dims4/default/d14084b/2147483647/strip/true/crop/600x600+0+0/resize/500x500!/format/webp/quality/90/?url=http%3A%2F%2Fboston-consulting-group-brightspot.s3.amazonaws.com%2F3e%2F9f%2F4f5891cd49c594f918f52c573564%2Fchristine-barton-headshot.jpg"},
+  {"company":"BCG","name":"Rich Lesser","title":"Global Chair","image":"https://web-assets.bcg.com/dims4/default/0fb393b/2147483647/strip/true/crop/438x438+0+0/resize/500x500!/format/webp/quality/90/?url=http%3A%2F%2Fboston-consulting-group-brightspot.s3.amazonaws.com%2Fec%2Fd4%2Ffad1e872d14a053ebd3952083ec9%2Frich-lesser-updated-tcm9-242032.jpg"},
+  {"company":"BCG","name":"Sharon Marcil","title":"Managing Director & Senior Partner, North American Regional Chair","image":"https://web-assets.bcg.com/dims4/default/344e235/2147483647/strip/true/crop/600x600+0+0/resize/1000x1000!/format/webp/quality/90/?url=http%3A%2F%2Fboston-consulting-group-brightspot.s3.amazonaws.com%2F71%2Fc4%2Fe5c04ef9472382803b88f66747e7%2Fsharon-marcil-headshot.png"},
+  {"company":"BCG","name":"Vladimir Lukic","title":"Managing Director & Senior Partner; Global Leader, Tech and Digital Advantage","image":"https://web-assets.bcg.com/dims4/default/6801a84/2147483647/strip/true/crop/1000x1000+0+0/resize/1000x1000!/format/webp/quality/90/?url=http%3A%2F%2Fboston-consulting-group-brightspot.s3.amazonaws.com%2F52%2F2a%2F125873864241a1ffb79da1358c23%2Fvlad-lukic-headshot.jpg"},
+  {"company":"BP","name":"Meg O'Neill","title":"CEO","image":"https://www.bp.com/content/dam/bp/business-sites/en/global/corporate/images-jpg-png/news-and-insights/meg-o-neill.jpg"},
+  {"company":"Calm","name":"David Ko","title":"CEO","image":"https://imgproxy.divecdn.com/TgeVUq7i8daLTEesWjmjfs-DpV_DoHo86h6i6TvyHtk/g:ce/rs:fill:1200:675:1/Z3M6Ly9kaXZlc2l0ZS1zdG9yYWdlL2RpdmVpbWFnZS9EYXZpZC1Lby1DYWxtLUNFTy5qcGc=.webp"},
+  {"company":"Carlyle","name":"David Rubenstein","title":"Co-Founder & Co-Chairman","image":"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSE5fZ1TeV56gkeWeTGfehHhkQ4d_uuZrh7_A&s"},
+  {"company":"Carlyle","name":"Harvey Schwartz","title":"CEO","image":"https://www.carlyle.com/sites/default/files/styles/bio_xl_2020_no_crop/public/images/bio/Schwartz-Harvey-Headshot_crop-01.jpg?itok=RQS0yva7"},
+  {"company":"CBRE","name":"Jamie Hodari","title":"Chief Commercial Officer; CEO, Building Operations & Experience; CEO, Industrious","image":"https://mediaassets.cbre.com/-/media/project/cbre/shared-site/headshots/j/a/m/jamie-hodari-headshot-20252.jpg"},
+  {"company":"Chevron","name":"Ryder Booth","title":"Chief Technology and Engineering Officer","image":"https://www.chevron.com/-/media/chevron/who-we-are/leadership/redesign-leader-bio/bio-leader-booth-ryder.jpg?h=330&hash=0DE08DD31941B9FB49BCCA7AD3592F25"},
+  {"company":"Chime","name":"Chris Britt","title":"Co-Founder and CEO","image":"https://thefinancialtechnologyreport.com/wp-content/uploads/2024/12/Chris-Britt-Fintech-Leader.jpg"},
+  {"company":"Cigna Group","name":"David Cordani","title":"Chief Executive Officer","image":"https://www.healthevolution.com/wp-content/uploads/2022/07/David-Cordani-Headshot.jpg"},
+  {"company":"Cisco","name":"Chuck Robbins","title":"Chairman & CEO","image":"https://newsroom.cisco.com/c/dam/r/newsroom/en/us/assets/executives/chuck-robbins/Chuck_Robbins_Thumbnail3.jpg"},
+  {"company":"Cisco","name":"Jeetu Patel","title":"President and Chief Product Officer","image":"https://newsroom.cisco.com/c/dam/r/newsroom/en/us/assets/executives/jeetu-patel/Patel_Jeetu_Thumbnail_1000x1200_0425.jpg"},
+  {"company":"Cisco","name":"Liz Centoni","title":"EVP and Chief Customer Experience Officer","image":"https://newsroom.cisco.com/c/dam/r/newsroom/en/us/assets/executives/liz-centoni/Liz_Centoni_Thumbnail.jpg"},
+  {"company":"Cisco","name":"Steve Clayton","title":"Senior Vice President & Chief Communications Officer","image":"https://newsroom.cisco.com/c/dam/r/newsroom/en/us/assets/executives/steve-clayton/Steve-Clayton-Thumbnail3.jpg"},
+  {"company":"Citadel","name":"Cason Carter","title":"Global Head of Public Affairs","image":"https://cc-tdi.org/wp-content/uploads/2018/08/Cason-Carter.jpg"},
+  {"company":"Citadel","name":"Josh King","title":"Head of Corporate Affairs","image":"https://www.citadel.com/wp-content/uploads/2024/09/Josh-King.jpg"},
+  {"company":"Citadel Securities","name":"Alex DiLeonardo","title":"Chief People Officer","image":"https://www.citadelsecurities.com/wp-content/uploads/sites/2/2023/11/Dileonardo_Headshot.jpg"},
+  {"company":"Citadel Securities","name":"Jim Esposito","title":"President","image":"https://www.citadelsecurities.com/wp-content/uploads/sites/2/2024/09/Jim-Esposito_240911_6948-e1734634538913.jpg"},
+  {"company":"Citadel Securities","name":"Shyam Rajan","title":"Global Head of Fixed Income","image":"https://www.citadelsecurities.com/wp-content/uploads/sites/2/2023/01/Shyam_Rajan.jpg"},
+  {"company":"Cloudflare","name":"Matthew Prince","title":"Co-founder & CEO","image":"https://static01.nyt.com/images/2017/08/13/business/13CORNER1/13CORNER1-superJumbo.jpg"},
+  {"company":"Cognizant","name":"Ravi Kumar","title":"CEO","image":"https://s3.amazonaws.com/brt.org/Kumar-Ravi.jpg"},
+  {"company":"Condé Nast","name":"Roger Lynch","title":"CEO","image":"https://s3.amazonaws.com/media.mediapost.com/dam/cropped/2026/03/01/rogerlynch-600_aJMtXRE.jpg"},
+  {"company":"Constellation Energy","name":"Joseph Dominguez","title":"President & CEO","image":"https://media.licdn.com/dms/image/v2/D4E03AQGyJRom4uOzeg/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1643814284018?e=2147483647&v=beta&t=-1wXDwkbQpoxKviPLsreL5X4xIw3LWAc8eG-Bn4kn_0"},
+  {"company":"Cooley","name":"Rachel Proffitt","title":"Partner and CEO","image":"https://www.cooley.com/-/media/cooley/bio-images/full-images/proffitt-rachel-23482-web.jpg?cx=0&cy=0&cw=354&ch=354&hash=B29B3992EE436AB07E1313544BA5EC4C"},
+  {"company":"CRH","name":"Jim Mintern","title":"CEO","image":"https://www.crh.com/wp-content/uploads/2025/08/jim-m-2025-1.png"},
+  {"company":"Dangote Group","name":"Aliko Dangote","title":"President & CEO","image":"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQbUlWwGwPUakTuU3IyhJRHRBGs1gg_EXGgxg&s"},
+  {"company":"Edelman","name":"Richard Edelman","title":"CEO","image":"https://cached.imagescaler.hbpl.co.uk/resize/scaleWidth/815/cached.offlinehbpl.hbpl.co.uk/news/ORP/02.edelman_176360.jpg"},
+  {"company":"Edward Jones","name":"Penny Pennington","title":"CEO","image":"https://careers.edwardjones.com/wp-content/uploads/sites/3657/2021/10/Symposium-Wallpaper.jpg"},
+  {"company":"Eldridge Industries","name":"Todd Boehly","title":"Co-founder, Chairman, and Chief Executive Officer","image":"https://media.licdn.com/dms/image/v2/D4E03AQG6kanz_GV4ww/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1727206704682?e=2147483647&v=beta&t=-Yv3OoP3fng2s7U2_WGgVubyXQxY4L-XQRQ_GXoXr0o"},
+  {"company":"Exiger","name":"Brandon Daniels","title":"CEO","image":"https://www.exiger.com/wp-content/uploads/2025/04/Brandon-Daniels-2025-Edited-1024x1024.jpg"},
+  {"company":"Expedia Group","name":"Ariane Gorin","title":"CEO","image":"https://ik.imgkit.net/3vlqs5axxjf/PCWW/uploadedImages/Articles/Interviews/2024/May/Ariane%20Gorin.JPG?tr=w-1200%2Cfo-auto"},
+  {"company":"Exxon Mobile","name":"Darren Woods","title":"CEO","image":"https://corporate.exxonmobil.com/-/media/digizuite-media-library/2025/08/27/12/14/2537539.jpg?usecustomfunctions=1&centercrop=1"},
+  {"company":"Fermi America","name":"Toby Neugebauer","title":"Co-Founder & CEO","image":"https://fermiamerica.com/nitropack_static/FQXoEZyAlpbQLYIxYpQUnLgAIeGqfdsQ/assets/images/optimized/rev-71e3fd4/fermiamerica.com/wp-content/uploads/2025/10/Toby-Heeadshot-500x500.jpg"},
+  {"company":"FGS Global","name":"Alexander Geiser","title":"CEO","image":"https://fgsglobal.com/_next/image?url=https%3A%2F%2Fa.storyblok.com%2Ff%2F137553%2F1024x1400%2F0132881115%2Falexander-geiser.jpg&w=1080&q=75"},
+  {"company":"FGS Global","name":"Ken Mehlman","title":"Board Member","image":"https://www.kkr.com/content/dam/kkr/bio/headshots/Ken%20Mehlman.jpeg"},
+  {"company":"Franklin Templeton","name":"Jenny Johnson","title":"CEO","image":"https://www.democracyinvestments.com/assets/team/portraits/jenny-johnson-26926d5e9630be65c727f9966c52fc2c9e33eeb79c2d5e2a6f225b1d314424b6.jpg"},
+  {"company":"Gallup","name":"Jon Clifton","title":"CEO","image":"https://media.licdn.com/dms/image/v2/D4E03AQGp2qftVfBNaw/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1720519288841?e=1776297600&v=beta&t=XrArdQa2Uc4IB809ZYqWPl6BXyyqC_nFvfQgFt3mSfk"},
+  {"company":"GE Vernova","name":"Scott Strazik","title":"CEO","image":"https://www.gevernova.com/sites/default/files/2024-03/01_strazik_scott.jpg"},
+  {"company":"GIC","name":"Eric Wilmes","title":"President, Americas","image":"https://www.gic.com.sg/uploads/2024/05/Eric-Wilmes-e1716272059335.jpg"},
+  {"company":"Goldman Sachs & Co.","name":"John Waldron","title":"President & COO","image":"https://www.goldmansachs.com/images/migrated/about-us/people-and-leadership/leadership/executive-officers/images/john-waldron-1000x1000.png"},
+  {"company":"GSK","name":"Emma Walmsley","title":"Former CEO GSK, & Board Director, Microsoft","image":"https://media.licdn.com/dms/image/v2/C4E03AQH8EeXL9R_LHQ/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1654757044193?e=2147483647&v=beta&t=nSDfaUfppFISJzBjlmUIlOtSxHdMVPYfECfFRDeu9bs"},
+  {"company":"Heidrick & Struggles","name":"Tom Monahan","title":"Chief Executive Officer","image":"https://www.heidrick.com/-/media/heidrickcom/images/consultants/m/monahan_thomas_-28480/monahan_tom_860x860.jpg?rev=557fcb1ad9264388a918039927b9ff16"},
+  {"company":"Hilton","name":"Christopher Nassetta","title":"President & CEO","image":"https://stories.hilton.com/uploads/2022/06/CNassetta_HR.jpeg"},
+  {"company":"Honeywell","name":"Vimal Kapur","title":"Chairman and Chief Executive Officer","image":"https://www.honeywell.com/content/dam/honeywellbt/en/images/content-images/leadership/hon-corp-kapur-vimal-bio-photo-1400x1400.jpg"},
+  {"company":"HSBC","name":"Georges Elhedery","title":"Group CEO","image":"https://www.hsbc.com/-/files/hsbc/who-we-are/leadership/main-image-high-res/250317-georges-elhedery-3890x5424.jpg?sc_lang=en-gb&hash=E89EF469C40890E56A9D00C3DCD2CFED?download=1"},
+  {"company":"Hyundai","name":"José Muñoz","title":"CEO","image":"https://www.hyundai.com/content/dam/hyundai/ww/en/images/newsroom/news-image/2024/11/1115-1/gallery/gallery-241115-02-1.jpg"},
+  {"company":"I Squared Capital","name":"Sadek Wahba","title":"Chairman and Managing Partner","image":"https://s3.amazonaws.com/cco-avatars/a5d6596f-50e7-4479-aec6-a496b140aba3.png"},
+  {"company":"IBM","name":"Gary Cohn","title":"Vice Chairman","image":"https://scaleglobal.co/wp-content/uploads/2022/11/gary-cohn.jpg"},
+  {"company":"ICONIQ","name":"Divesh Makan","title":"Founding Partner","image":"https://www.sfjazz.org/media/2hnpe10c/diveshmakan_cutout.jpg?width=1200&height=1200&v=1dc6d37443512b0"},
+  {"company":"ICONIQ","name":"Michael Anders","title":"Founding Partner","image":"https://images.squarespace-cdn.com/content/v1/586bd48d03596e5605450cee/1484942339385-NDJIXGMC54160SL18DIM/image-asset.jpeg"},
+  {"company":"Indeed","name":"Deko (Hisayuki) Idekoba","title":"CEO and President of Indeed; Representative Director, President & CEO of Recruit Holdings","image":"https://recruit-holdings.com/fetch/img/fdbc3n76uu0x/7s4zsBjTJu8RpiWVIYWpm4/334114944974b7d29e87ce2836b6bcb2/press_hisayuki_idekoba.jpg?w=750&h=750&fl=progressive&q=50&fm=jpg&bg=rgb%3Af3f5fa"},
+  {"company":"Indeed","name":"Laura Ullrich","title":"Director of Economic Research, North America","image":"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTz0Wri-JfLq3mzDhqVIUGuvHCM7b95_ITIvA&s"},
+  {"company":"Infosys Limited","name":"Nandan M. Nilekani","title":"Co-founder and Chairman of the Board","image":"https://www.infosys.com/content/dam/infosys-web/en/global-resource/photos/nandan.jpg"},
+  {"company":"Infosys Limited","name":"Salil Parekh","title":"CEO & Managing Director","image":"https://www.infosys.com/content/dam/infosys-web/en/global-resource/photos/salil-parekh.jpg"},
+  {"company":"JetBlue","name":"Joanna Geraghty","title":"CEO","image":"https://concernusa.org/uploads/joanna-geraghty-headshot_square.webp"},
+  {"company":"JLL (Jones Lang LaSalle)","name":"Christian Ulbrich","title":"Global CEO & President","image":"https://res.cloudinary.com/jll-global-broker-profile/image/upload/f_auto,q_auto/w_780/v1749052029/prod/eqsjot2t18cytmx4x3dw.jpg"},
+  {"company":"John Hancock","name":"Brooks Tingle","title":"President & CEO","image":"https://www.johnhancock.com/content/dam/onejohnhancock/images/about-us/leadership/Brooks_Tingle_leadership.510.510.jpg"},
+  {"company":"KKR","name":"Henry Kravis","title":"Co-Founder & Co-Executive Chairman","image":"https://www.kkr.com/content/dam/kkr/bio/headshots/Henry%20R.%20Kravis.jpg"},
+  {"company":"KKR","name":"Kareem Daniel","title":"Executive Advisor","image":"https://media.licdn.com/dms/image/v2/C5103AQGN19JUg0xgrw/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1517363397753?e=1776297600&v=beta&t=nvOWjzO0dw4pte0C9FJP0UraPm43s3tFMug5e3KggKk"},
+  {"company":"KPMG","name":"Matthew (Matt) Miner","title":"General Counsel & Vice Chair, Legal, Risk Management and Compliance for KPMG LLP (US)","image":"https://media.licdn.com/dms/image/v2/D5603AQHkIEb-mTQ2yw/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1711138295821?e=1776297600&v=beta&t=QhNwaDA_il2lQ-F9Qal948kj6SRnlrc5CrQ4_C1brqg"},
+  {"company":"KPMG","name":"Tim Walsh","title":"Chair and CEO","image":"https://media.licdn.com/dms/image/v2/D4E03AQG5qb128tilFA/profile-displayphoto-crop_800_800/B4EZfwWn4THsAM-/0/1752084152348?e=1776297600&v=beta&t=w8-CBs2kd3utt-NRHAoOaIxJkzLfwJoakCtJLOslNKq0"},
+  {"company":"Kyndryl","name":"Martin Schroeter","title":"Chairman & CEO","image":"https://s7d1.scene7.com/is/image/kyndryl/m_shroeter_index?qlt=85"},
+  {"company":"Lazard","name":"Peter Orszag","title":"CEO & Chairman","image":"https://images.fnlondon.com/im-48854624?width=1280&size=1"},
+  {"company":"Lilly","name":"David Ricks","title":"Chair and CEO","image":"https://www.statnews.com/wp-content/uploads/2025/03/Dave-Ricks-645x645.jpg"},
+  {"company":"LinkedIn","name":"Blake Lawit","title":"Chief Global Affairs and Legal Officer","image":"https://media.licdn.com/dms/image/v2/D5603AQFOZ34R_BLUFg/profile-displayphoto-scale_400_400/B56ZxNltzyHoAg-/0/1770828273859?e=1776297600&v=beta&t=9m9ri3kskXR2nmI76kr6H49d2sGhivC4sq1RckKjrZA"},
+  {"company":"LinkedIn","name":"Reid Hoffman","title":"Co-founder of LinkedIn & Manas AI","image":"https://media.licdn.com/dms/image/v2/D5603AQHW7wKzPb3DAg/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1718216204174?e=2147483647&v=beta&t=_CCpDriOmxYQ2dvuyVwU7D63RyTduLzslIJTP75N9eQ"},
+  {"company":"Lippincott","name":"Michael D'Esopo","title":"CEO","image":"https://media.licdn.com/dms/image/v2/D4E03AQFwdV4Zr8t20w/profile-displayphoto-scale_200_200/B4EZobBhP3JgAY-/0/1761389975052?e=2147483647&v=beta&t=mPLkAxI2EUpNXaSMac6Y-fDqvRQ3zje3_hidZa61bqQ"},
+  {"company":"Lippincott","name":"Taddy Hall","title":"Senior Partner, Experience Innovation/Strategy","image":""},
+  {"company":"Lucid Group","name":"Nichelle Maynard-Elliott","title":"Independent Director, Xerox and Independent Director, Lucid Group","image":""},
+  {"company":"Lucid Motors","name":"Marc Winterhoff","title":"Interim CEO","image":""},
+  {"company":"Lumen Technologies","name":"Kate Johnson","title":"President & CEO","image":""},
+  {"company":"Mastercard","name":"Merit Janow","title":"Chair of the Board","image":""},
+  {"company":"McCourt Global","name":"Frank McCourt","title":"Executive Chairman; Founder, Project Liberty","image":""},
+  {"company":"McKinsey & Company","name":"Daniel Pacthod","title":"Senior Partner; Chair, Leadership Initiative, New York","image":""},
+  {"company":"McKinsey & Company","name":"Eric Kutcher","title":"Chair, North America","image":""},
+  {"company":"Meta","name":"Dina Powell McCormick","title":"President & Vice Chairman","image":""},
+  {"company":"Microsoft AI","name":"Mustafa Suleyman","title":"CEO","image":"https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Mustafa_Suleyman_photo_%28cropped%29.jpg/960px-Mustafa_Suleyman_photo_%28cropped%29.jpg"},
+  {"company":"NRG","name":"Matt Carter","title":"Chair, Nominating & Governance Committee","image":"https://media.licdn.com/dms/image/v2/C5103AQFaPP016X9dzw/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1516332887594?e=1776297600&v=beta&t=s8p9kH4NoUhUEeJV8EnXQEO2afuaJeJlALAlcRNu8L8"},
+  {"company":"onsemi","name":"Hassane El-Khoury","title":"President & CEO","image":""},
+  {"company":"Pearson","name":"Omar Abbosh","title":"CEO","image":""},
+  {"company":"Pfizer","name":"Albert Bourla","title":"CEO","image":"https://cdn.pfizer.com/pfizercom/styles/original_image/s3/2025-09/albert_bourla_2025_400x600.jpg.webp?VersionId=Ft4feUbisEwvMVnVmyjeSayAD_BjBxaq&itok=Pp77qA7F"},
+  {"company":"PMI","name":"Jacek Olczak","title":"CEO","image":"https://www.pmi.com/content/dam/pmicom/global/images/board-of-directors/jacek-olczak-ceo-pmi.jpg?imwidth=2048&imdensity=2"},
+  {"company":"PMI","name":"Stacey Kennedy","title":"CEO, US","image":"https://media.licdn.com/dms/image/v2/D4E03AQHRhkZqWRGcEA/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1680786248381?e=1776297600&v=beta&t=tmGmkJKprN59cT44QyeyXxkJkndFmDIE4ZxxOb6NfO0"},
+  {"company":"PNC","name":"Bill Demchak","title":"Chairman and CEO","image":""},
+  {"company":"PwC US","name":"Dan Priest","title":"Chief AI Officer","image":""},
+  {"company":"PwC US","name":"Michelle Horton","title":"Principal","image":""},
+  {"company":"PwC US","name":"Paul Griggs","title":"US Senior Partner & CEO","image":""},
+  {"company":"Qualcomm Incorporated","name":"Cristiano Amon","title":"President & CEO","image":""},
+  {"company":"Ralph Lauren","name":"Patrice Louvet","title":"President & CEO","image":""},
+  {"company":"Ripple","name":"Brad Garlinghouse","title":"CEO","image":""},
+  {"company":"Royal Bank of Canada","name":"David McKay","title":"President & CEO","image":"https://www.canadianclub.org/wp-content/uploads/2024/08/profile-dave-mckay.jpg"},
+  {"company":"SAP SE","name":"Christian Klein","title":"CEO","image":""},
+  {"company":"Saudi Arabia","name":"HRH Princess Reema Bandar Al Saud","title":"Ambassador to the United States","image":"https://www.edrmagazine.eu/wp-content/uploads/2024/01/HRH-Ambassador-Reema-bint-Bandar-Al-Saud.jpg"},
+  {"company":"Schneider Electric","name":"Aamir Paul","title":"President, North America Operations","image":""},
+  {"company":"SkyBridge Capital","name":"Anthony Scaramucci","title":"Founder & Managing Partner","image":""},
+  {"company":"Stand Together","name":"Brian Hooks","title":"Chairman and CEO","image":""},
+  {"company":"Standard Bank Group","name":"Simpiwe Tshabalala","title":"Group Chief Executive","image":""},
+  {"company":"Tata Sons","name":"Natarajan Chandrasekaran","title":"Chairman","image":""},
+  {"company":"TIAA","name":"Thasunda Brown Duckett","title":"President and CEO","image":""},
+  {"company":"TotalEnergies","name":"Patrick Pouyanné","title":"Chairman and CEO","image":""},
+  {"company":"Udemy","name":"Hugo Sarrazin","title":"CEO","image":""},
+  {"company":"Verizon","name":"Dan Schulman","title":"CEO","image":""},
+  {"company":"Verizon","name":"Franz Paasche","title":"Executive Vice President, Corporate Affairs","image":""},
+  {"company":"WeWork","name":"John Santora","title":"Chief Executive Officer","image":""},
+  {"company":"Willett Advisors","name":"Steve Rattner","title":"Chairman & CEO","image":""}
+];
+
+let index = 0;
+let flipped = false;
+
+const card = document.getElementById('card');
+const photo = document.getElementById('photo');
+const front = document.getElementById('front');
+const bCompany = document.getElementById('b-company');
+const bName = document.getElementById('b-name');
+const bTitle = document.getElementById('b-title');
+const currentEl = document.getElementById('current');
+const totalEl = document.getElementById('total');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const dotsEl = document.getElementById('dots');
+
+totalEl.textContent = data.length;
+
+// Build dots
+data.forEach((_, i) => {
+  const d = document.createElement('div');
+  d.className = 'dot' + (i === 0 ? ' active' : '');
+  d.onclick = () => goTo(i);
+  dotsEl.appendChild(d);
+});
+
+function render() {
+  const p = data[index];
+
+  // Reset flip without animation
+  card.style.transition = 'none';
+  card.classList.remove('flipped');
+  flipped = false;
+  // Re-enable transition after reset
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      card.style.transition = '';
+    });
+  });
+
+  // Set front image
+  if (p.image) {
+    photo.src = p.image;
+    photo.style.display = 'block';
+    // Remove any existing no-image div
+    const existing = front.querySelector('.no-image');
+    if (existing) existing.remove();
+  } else {
+    photo.style.display = 'none';
+    let ni = front.querySelector('.no-image');
+    if (!ni) {
+      ni = document.createElement('div');
+      ni.className = 'no-image';
+      ni.textContent = '👤';
+      front.insertBefore(ni, front.querySelector('.flip-hint'));
+    }
+  }
+
+  // Set back
+  bCompany.textContent = p.company;
+  bName.textContent = p.name;
+  bTitle.textContent = p.title;
+
+  // Counter
+  currentEl.textContent = index + 1;
+
+  // Buttons
+  prevBtn.disabled = index === 0;
+  nextBtn.disabled = index === data.length - 1;
+
+  // Dots
+  dotsEl.querySelectorAll('.dot').forEach((d, i) => {
+    d.classList.toggle('active', i === index);
+  });
+
+  // Scroll active dot into view
+  const activeDot = dotsEl.children[index];
+  if (activeDot) activeDot.scrollIntoView({ block: 'nearest', inline: 'center' });
+}
+
+function flipCard() {
+  flipped = !flipped;
+  card.classList.toggle('flipped', flipped);
+}
+
+function go(dir) {
+  goTo(index + dir);
+}
+
+function goTo(i) {
+  if (i < 0 || i >= data.length) return;
+  index = i;
+  render();
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowLeft') go(-1);
+  else if (e.key === 'ArrowRight') go(1);
+  else if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flipCard(); }
+});
+
+render();
+</script>
+</body>
+</html>
