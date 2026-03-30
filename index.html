@@ -236,7 +236,8 @@
     .mc-opt.wrong { background: rgba(239,68,68,0.15); border-color: #ef4444; color: #ef4444; }
     .mc-opt { display: flex; flex-direction: column; gap: 3px; }
     .mc-opt-name { font-size: 14px; font-weight: 600; }
-    .mc-opt-company { font-size: 11px; opacity: 0.65; font-weight: 400; }
+    .mc-opt-title { font-size: 11px; color: #9090a8; font-weight: 400; font-style: italic; }
+    .mc-opt-company { font-size: 11px; color: #7c6af5; font-weight: 600; letter-spacing: 0.04em; }
     .mc-next {
       padding: 12px 32px; border-radius: 12px;
       border: none; background: #7c6af5; color: #fff;
@@ -964,7 +965,7 @@ function renderMC() {
   options.forEach(opt => {
     const btn = document.createElement('button');
     btn.className = 'mc-opt';
-    btn.innerHTML = `<span class="mc-opt-name">${opt.name}</span><span class="mc-opt-company">${opt.title}</span><span class="mc-opt-company">${opt.company}</span>`;
+    btn.innerHTML = `<span class="mc-opt-name">${opt.name}</span><span class="mc-opt-title">${opt.title}</span><span class="mc-opt-company">${opt.company}</span>`;
     btn.dataset.name = opt.name;
     btn.onclick = () => mcAnswer(btn, opt.name === p.name, p.name);
     optsEl.appendChild(btn);
