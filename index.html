@@ -234,6 +234,9 @@
     .mc-opt:disabled { cursor: default; }
     .mc-opt.correct { background: rgba(34,197,94,0.15); border-color: #22c55e; color: #22c55e; }
     .mc-opt.wrong { background: rgba(239,68,68,0.15); border-color: #ef4444; color: #ef4444; }
+    .mc-opt { display: flex; flex-direction: column; gap: 3px; }
+    .mc-opt-name { font-size: 14px; font-weight: 600; }
+    .mc-opt-company { font-size: 11px; opacity: 0.65; font-weight: 400; }
     .mc-next {
       padding: 12px 32px; border-radius: 12px;
       border: none; background: #7c6af5; color: #fff;
@@ -442,6 +445,7 @@
   </div>
   <div class="type-form">
     <input type="text" id="type-input" class="type-input" placeholder="Type the person's name…" autocomplete="off" />
+    <input type="text" id="type-input-company" class="type-input" placeholder="Type their company…" autocomplete="off" />
     <div class="type-feedback" id="type-feedback"></div>
     <button class="type-submit" id="type-submit" onclick="typeCheck()">Check</button>
   </div>
@@ -956,7 +960,8 @@ function renderMC() {
   options.forEach(opt => {
     const btn = document.createElement('button');
     btn.className = 'mc-opt';
-    btn.textContent = opt.name;
+    btn.innerHTML = `<span class="mc-opt-name">${opt.name}</span><span class="mc-opt-company">${opt.company}</span>`;
+    btn.dataset.name = opt.name;
     btn.onclick = () => mcAnswer(btn, opt.name === p.name, p.name);
     optsEl.appendChild(btn);
   });
@@ -965,7 +970,7 @@ function renderMC() {
 function mcAnswer(btn, correct, correctName) {
   document.querySelectorAll('.mc-opt').forEach(b => {
     b.disabled = true;
-    if (b.textContent === correctName) b.classList.add('correct');
+    if (b.dataset.name === correctName) b.classList.add('correct');
   });
   if (!correct) btn.classList.add('wrong');
   answered++;
@@ -995,7 +1000,9 @@ function renderType() {
   setImg(imgEl, p.image);
 
   const inp = document.getElementById('type-input');
+  const inpCo = document.getElementById('type-input-company');
   inp.value = ''; inp.className = 'type-input'; inp.disabled = false;
+  inpCo.value = ''; inpCo.className = 'type-input'; inpCo.disabled = false;
   document.getElementById('type-feedback').textContent = '';
   document.getElementById('type-feedback').className = 'type-feedback';
   const submitBtn = document.getElementById('type-submit');
@@ -1003,25 +1010,35 @@ function renderType() {
   setTimeout(() => inp.focus(), 100);
 }
 
+function fuzzyMatch(val, correct) {
+  val = val.trim().toLowerCase();
+  correct = correct.toLowerCase();
+  const parts = correct.split(/\s+/);
+  return val === correct || parts.some(part => part.length > 2 && val === part) ||
+    (correct.includes(val) && val.length > 3);
+}
+
 function typeCheck() {
   const p = activeCards[studyIndex];
   const inp = document.getElementById('type-input');
-  const val = inp.value.trim().toLowerCase();
-  const correct = p.name.toLowerCase();
-  // Accept if input matches first name, last name, or full name
-  const parts = correct.split(/\s+/);
-  const isCorrect = val === correct || parts.some(part => part.length > 2 && val === part) ||
-    correct.includes(val) && val.length > 3;
+  const inpCo = document.getElementById('type-input-company');
+  const nameOk = fuzzyMatch(inp.value, p.name);
+  const companyOk = fuzzyMatch(inpCo.value, p.company);
+  const isCorrect = nameOk && companyOk;
 
   inp.disabled = true;
+  inpCo.disabled = true;
+  inp.className = 'type-input ' + (nameOk ? 'correct' : 'wrong');
+  inpCo.className = 'type-input ' + (companyOk ? 'correct' : 'wrong');
+
   answered++;
+  if (isCorrect) score++;
   const fb = document.getElementById('type-feedback');
   if (isCorrect) {
-    score++; inp.className = 'type-input correct';
     fb.textContent = '✓ Correct!'; fb.className = 'type-feedback correct';
   } else {
-    inp.className = 'type-input wrong';
-    fb.textContent = `✗ ${p.name}`; fb.className = 'type-feedback wrong';
+    const hint = [!nameOk ? `Name: ${p.name}` : '', !companyOk ? `Company: ${p.company}` : ''].filter(Boolean).join(' · ');
+    fb.textContent = `✗ ${hint}`; fb.className = 'type-feedback wrong';
   }
   document.getElementById('type-score').textContent = `Score: ${score} / ${answered}`;
   const submitBtn = document.getElementById('type-submit');
@@ -1031,7 +1048,13 @@ function typeCheck() {
 
 document.getElementById('type-input').addEventListener('keydown', e => {
   if (e.key === 'Enter') {
-    if (!document.getElementById('type-input').disabled) typeCheck();
+    if (!document.getElementById('type-input').disabled) document.getElementById('type-input-company').focus();
+    else { studyIndex++; renderType(); }
+  }
+});
+document.getElementById('type-input-company').addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    if (!document.getElementById('type-input-company').disabled) typeCheck();
     else { studyIndex++; renderType(); }
   }
 });
