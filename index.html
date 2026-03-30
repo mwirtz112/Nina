@@ -814,11 +814,15 @@ rebuildSearchIndex();
 searchInput.addEventListener('input', () => {
   const q = searchInput.value.trim().toLowerCase();
   if (!q) { searchResults.classList.remove('open'); return; }
-  const matches = allCards.filter(c =>
-    c.name.toLowerCase().includes(q) ||
-    c.company.toLowerCase().includes(q) ||
-    c.title.toLowerCase().includes(q)
-  ).slice(0, 12);
+  const seen = new Set();
+  const matches = allCards.filter(c => {
+    const key = c.name.toLowerCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return c.name.toLowerCase().includes(q) ||
+      c.company.toLowerCase().includes(q) ||
+      c.title.toLowerCase().includes(q);
+  }).slice(0, 12);
   if (matches.length === 0) {
     searchResults.innerHTML = '<div class="search-no-results">No results found</div>';
   } else {
