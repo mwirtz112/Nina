@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SWE 2026 CEO Flashcards</title>
+  <title>SWE 2026 Faces</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -12,413 +12,541 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
       background: #0f0f13;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       color: #fff;
-      padding: 24px;
+      padding: 32px 24px 60px;
     }
 
-    /* ── SELECTION SCREEN ── */
-    #selection {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 40px;
+    /* ─── SCREENS ─── */
+    .screen { display: none; width: 100%; max-width: 540px; flex-direction: column; align-items: center; }
+    .screen.active { display: flex; }
+
+    /* ─── HOME ─── */
+    .home-header { text-align: center; margin-bottom: 32px; }
+    .home-header h1 { font-size: clamp(26px, 5vw, 38px); font-weight: 700; letter-spacing: -0.02em; }
+    .home-header p { margin-top: 6px; font-size: 15px; color: #666; }
+
+    .search-wrap { position: relative; width: 100%; margin-bottom: 28px; }
+    .search-wrap input {
       width: 100%;
-      max-width: 520px;
-    }
-
-    .sel-header {
-      text-align: center;
-    }
-
-    .sel-header h1 {
-      font-size: clamp(24px, 5vw, 36px);
-      font-weight: 700;
-      letter-spacing: -0.02em;
-    }
-
-    .sel-header p {
-      margin-top: 8px;
-      font-size: 15px;
-      color: #666;
-    }
-
-    .sel-buttons {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      width: 100%;
-    }
-
-    .sel-btn {
-      width: 100%;
-      padding: 20px 28px;
-      border-radius: 14px;
+      padding: 13px 18px 13px 44px;
+      border-radius: 12px;
       border: 1px solid #2a2a40;
       background: #1a1a28;
       color: #fff;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      text-align: left;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      transition: background 0.2s, border-color 0.2s, transform 0.1s;
+      font-size: 15px;
+      outline: none;
+      transition: border-color 0.2s;
     }
-
-    .sel-btn:hover {
-      background: #22223a;
-      border-color: #7c6af5;
-    }
-
-    .sel-btn:active {
-      transform: scale(0.98);
-    }
-
-    .sel-btn.disabled {
-      opacity: 0.35;
-      cursor: not-allowed;
+    .search-wrap input::placeholder { color: #555; }
+    .search-wrap input:focus { border-color: #7c6af5; }
+    .search-icon {
+      position: absolute;
+      left: 14px; top: 50%;
+      transform: translateY(-50%);
+      color: #555; font-size: 16px;
       pointer-events: none;
     }
-
-    .sel-btn .btn-meta {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .sel-btn .btn-label {
-      font-size: 16px;
-      font-weight: 600;
-    }
-
-    .sel-btn .btn-count {
-      font-size: 12px;
-      font-weight: 400;
-      color: #7c6af5;
-    }
-
-    .sel-btn .btn-arrow {
-      font-size: 20px;
-      color: #555;
-    }
-
-    /* ── FLASHCARD SCREEN ── */
-    #flashcards {
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      gap: 32px;
-      width: 100%;
-    }
-
-    .top-bar {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      width: min(420px, 90vw);
-    }
-
-    .back-btn {
-      background: none;
+    .search-results {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0; right: 0;
+      background: #1a1a28;
       border: 1px solid #2a2a40;
-      color: #888;
-      font-size: 13px;
-      padding: 6px 14px;
-      border-radius: 20px;
+      border-radius: 12px;
+      overflow: hidden;
+      z-index: 100;
+      max-height: 320px;
+      overflow-y: auto;
+      display: none;
+    }
+    .search-results.open { display: block; }
+    .search-result-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 16px;
       cursor: pointer;
+      transition: background 0.15s;
+      border-bottom: 1px solid #1f1f30;
+    }
+    .search-result-item:last-child { border-bottom: none; }
+    .search-result-item:hover { background: #22223a; }
+    .sri-photo {
+      width: 40px; height: 40px; border-radius: 50%;
+      object-fit: cover; background: #2a2a40; flex-shrink: 0;
+    }
+    .sri-info { flex: 1; min-width: 0; }
+    .sri-name { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sri-meta { font-size: 12px; color: #7c6af5; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sri-deck { font-size: 11px; color: #555; flex-shrink: 0; }
+    .search-no-results { padding: 20px; text-align: center; color: #555; font-size: 14px; }
+
+    .deck-buttons { display: flex; flex-direction: column; gap: 12px; width: 100%; }
+    .deck-btn {
+      width: 100%; padding: 18px 22px;
+      border-radius: 14px; border: 1px solid #2a2a40;
+      background: #1a1a28; color: #fff;
+      cursor: pointer; text-align: left;
+      display: flex; align-items: center; justify-content: space-between;
+      transition: background 0.2s, border-color 0.2s, transform 0.1s;
+    }
+    .deck-btn:hover { background: #22223a; border-color: #7c6af5; }
+    .deck-btn:active { transform: scale(0.98); }
+    .deck-btn.disabled { opacity: 0.35; cursor: not-allowed; pointer-events: none; }
+    .deck-btn .btn-label { font-size: 16px; font-weight: 600; }
+    .deck-btn .btn-count { font-size: 12px; color: #7c6af5; margin-top: 3px; }
+    .deck-btn .btn-arrow { font-size: 18px; color: #555; }
+
+    /* ─── MODE SELECT ─── */
+    .mode-header { text-align: center; margin-bottom: 28px; }
+    .mode-header h2 { font-size: 22px; font-weight: 700; }
+    .mode-header p { font-size: 14px; color: #666; margin-top: 5px; }
+
+    .mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; margin-bottom: 20px; }
+    .mode-card {
+      padding: 20px 16px; border-radius: 14px;
+      border: 1px solid #2a2a40; background: #1a1a28;
+      cursor: pointer; text-align: center;
+      transition: background 0.2s, border-color 0.2s, transform 0.1s;
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+    }
+    .mode-card:hover { background: #22223a; border-color: #7c6af5; }
+    .mode-card:active { transform: scale(0.97); }
+    .mode-icon { font-size: 28px; }
+    .mode-name { font-size: 14px; font-weight: 600; }
+    .mode-desc { font-size: 11px; color: #666; line-height: 1.4; }
+
+    /* ─── STUDY HEADER ─── */
+    .study-topbar {
+      display: flex; align-items: center; gap: 12px;
+      width: 100%; margin-bottom: 20px;
+    }
+    .back-btn {
+      background: none; border: 1px solid #2a2a40; color: #888;
+      font-size: 13px; padding: 6px 14px; border-radius: 20px;
+      cursor: pointer; white-space: nowrap;
       transition: color 0.2s, border-color 0.2s;
     }
+    .back-btn:hover { color: #fff; border-color: #555; }
+    .study-meta { flex: 1; text-align: right; font-size: 12px; color: #555; }
 
-    .back-btn:hover {
-      color: #fff;
-      border-color: #555;
+    .progress-bar-wrap { width: 100%; height: 4px; background: #2a2a40; border-radius: 2px; margin-bottom: 20px; }
+    .progress-bar-fill { height: 100%; background: #7c6af5; border-radius: 2px; transition: width 0.3s; }
+
+    .score-badge {
+      font-size: 13px; color: #7c6af5;
+      background: rgba(124,106,245,0.1);
+      border: 1px solid rgba(124,106,245,0.25);
+      padding: 4px 12px; border-radius: 20px;
+      margin-bottom: 16px;
     }
 
-    .deck-title {
-      font-size: 13px;
-      color: #555;
-      flex: 1;
-      text-align: right;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .counter {
-      font-size: 14px;
-      color: #888;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-
+    /* ─── FLASHCARD ─── */
     .scene {
-      width: min(420px, 90vw);
-      height: min(520px, 70vh);
-      perspective: 1200px;
-      cursor: pointer;
+      width: min(420px, 90vw); height: min(500px, 65vh);
+      perspective: 1200px; cursor: pointer; margin-bottom: 24px;
     }
-
     .card {
-      width: 100%;
-      height: 100%;
-      position: relative;
+      width: 100%; height: 100%; position: relative;
       transform-style: preserve-3d;
       transition: transform 0.55s cubic-bezier(0.4, 0.2, 0.2, 1);
       border-radius: 20px;
     }
-
-    .card.flipped {
-      transform: rotateY(180deg);
-    }
-
+    .card.flipped { transform: rotateY(180deg); }
     .card-face {
-      position: absolute;
-      inset: 0;
-      border-radius: 20px;
-      backface-visibility: hidden;
-      -webkit-backface-visibility: hidden;
-      overflow: hidden;
+      position: absolute; inset: 0; border-radius: 20px;
+      backface-visibility: hidden; -webkit-backface-visibility: hidden; overflow: hidden;
     }
-
-    .card-front {
-      background: #1a1a22;
-      border: 1px solid #2a2a35;
+    .card-front { background: #1a1a22; border: 1px solid #2a2a35; }
+    .card-front img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .no-image {
+      width: 100%; height: 100%; display: flex;
+      align-items: center; justify-content: center;
+      font-size: 80px; background: linear-gradient(135deg,#1a1a22,#252535); color: #3a3a50;
     }
-
-    .card-front img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-
-    .card-front .no-image {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 80px;
-      background: linear-gradient(135deg, #1a1a22 0%, #252535 100%);
-      color: #3a3a50;
-    }
-
     .flip-hint {
-      position: absolute;
-      bottom: 16px;
-      right: 16px;
-      background: rgba(0,0,0,0.5);
-      backdrop-filter: blur(8px);
-      color: rgba(255,255,255,0.6);
-      font-size: 11px;
-      padding: 5px 10px;
-      border-radius: 20px;
-      letter-spacing: 0.05em;
-      pointer-events: none;
+      position: absolute; bottom: 14px; right: 14px;
+      background: rgba(0,0,0,0.5); backdrop-filter: blur(8px);
+      color: rgba(255,255,255,0.6); font-size: 11px;
+      padding: 4px 10px; border-radius: 20px; pointer-events: none;
     }
-
     .card-back {
-      background: linear-gradient(145deg, #1c1c28 0%, #13131d 100%);
-      border: 1px solid #2a2a40;
-      transform: rotateY(180deg);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 40px 32px;
-      text-align: center;
-      gap: 16px;
+      background: linear-gradient(145deg,#1c1c28,#13131d);
+      border: 1px solid #2a2a40; transform: rotateY(180deg);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 36px 28px; text-align: center; gap: 14px;
     }
-
-    .card-back .company {
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: #7c6af5;
-      background: rgba(124, 106, 245, 0.1);
-      padding: 5px 14px;
-      border-radius: 20px;
-      border: 1px solid rgba(124, 106, 245, 0.25);
+    .cb-company {
+      font-size: 11px; font-weight: 600; letter-spacing: 0.15em;
+      text-transform: uppercase; color: #7c6af5;
+      background: rgba(124,106,245,0.1); padding: 4px 12px;
+      border-radius: 20px; border: 1px solid rgba(124,106,245,0.25);
     }
+    .cb-name { font-size: clamp(20px,5vw,28px); font-weight: 700; line-height: 1.2; }
+    .cb-title { font-size: clamp(12px,2.5vw,14px); color: #9090a8; line-height: 1.5; max-width: 300px; }
+    .divider { width: 36px; height: 2px; background: linear-gradient(90deg,#7c6af5,#a78bfa); border-radius: 2px; }
 
-    .card-back .name {
-      font-size: clamp(22px, 5vw, 30px);
-      font-weight: 700;
-      line-height: 1.2;
-      color: #fff;
-    }
-
-    .card-back .title {
-      font-size: clamp(13px, 2.5vw, 15px);
-      color: #9090a8;
-      line-height: 1.5;
-      max-width: 320px;
-    }
-
-    .divider {
-      width: 40px;
-      height: 2px;
-      background: linear-gradient(90deg, #7c6af5, #a78bfa);
-      border-radius: 2px;
-    }
-
-    .nav {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-    }
-
+    .fc-nav { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
     .nav-btn {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      border: 1px solid #2a2a40;
-      background: #1a1a28;
-      color: #fff;
-      font-size: 20px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      width: 46px; height: 46px; border-radius: 50%;
+      border: 1px solid #2a2a40; background: #1a1a28;
+      color: #fff; font-size: 18px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
       transition: background 0.2s, border-color 0.2s, transform 0.1s;
       user-select: none;
     }
-
-    .nav-btn:hover {
-      background: #252535;
-      border-color: #7c6af5;
-    }
-
+    .nav-btn:hover { background: #252535; border-color: #7c6af5; }
     .nav-btn:active { transform: scale(0.93); }
     .nav-btn:disabled { opacity: 0.3; cursor: default; }
 
-    .progress {
-      display: flex;
-      gap: 5px;
-      flex-wrap: wrap;
-      justify-content: center;
-      max-width: min(420px, 90vw);
-    }
-
-    .dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: #2a2a40;
-      transition: background 0.2s;
-      cursor: pointer;
-    }
-
-    .dot.active { background: #7c6af5; }
-
-    .hint {
-      font-size: 12px;
-      color: #555;
-      text-align: center;
-    }
-
     .shuffle-btn {
-      background: none;
-      border: 1px solid #2a2a40;
-      color: #7c6af5;
-      font-size: 13px;
-      padding: 7px 16px;
-      border-radius: 20px;
-      cursor: pointer;
+      background: none; border: 1px solid #2a2a40; color: #7c6af5;
+      font-size: 13px; padding: 7px 16px; border-radius: 20px; cursor: pointer;
       transition: background 0.2s, border-color 0.2s;
     }
+    .shuffle-btn:hover { background: rgba(124,106,245,0.1); border-color: #7c6af5; }
+    .shuffle-btn.hidden { visibility: hidden; pointer-events: none; }
 
-    .shuffle-btn:hover {
-      background: rgba(124,106,245,0.1);
-      border-color: #7c6af5;
-    }
+    .dots-row { display: flex; gap: 5px; flex-wrap: wrap; justify-content: center; max-width: min(420px,90vw); margin-bottom: 12px; }
+    .dot { width: 6px; height: 6px; border-radius: 50%; background: #2a2a40; transition: background 0.2s; cursor: pointer; }
+    .dot.active { background: #7c6af5; }
+    .kbd-hint { font-size: 12px; color: #444; }
 
-    .shuffle-btn.hidden {
-      visibility: hidden;
-      pointer-events: none;
+    /* ─── MULTIPLE CHOICE ─── */
+    .mc-photo-wrap {
+      width: min(300px,80vw); height: min(320px,40vw);
+      border-radius: 16px; overflow: hidden;
+      border: 1px solid #2a2a35; background: #1a1a22;
+      margin-bottom: 24px; flex-shrink: 0;
     }
+    .mc-photo-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .mc-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; margin-bottom: 20px; }
+    .mc-opt {
+      padding: 14px 12px; border-radius: 12px;
+      border: 1px solid #2a2a40; background: #1a1a28;
+      color: #fff; font-size: 14px; font-weight: 500;
+      cursor: pointer; text-align: center; line-height: 1.3;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .mc-opt:hover:not(:disabled) { background: #22223a; border-color: #7c6af5; }
+    .mc-opt:disabled { cursor: default; }
+    .mc-opt.correct { background: rgba(34,197,94,0.15); border-color: #22c55e; color: #22c55e; }
+    .mc-opt.wrong { background: rgba(239,68,68,0.15); border-color: #ef4444; color: #ef4444; }
+    .mc-next {
+      padding: 12px 32px; border-radius: 12px;
+      border: none; background: #7c6af5; color: #fff;
+      font-size: 15px; font-weight: 600; cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .mc-next:hover { background: #6b5ae0; }
+    .mc-next:active { transform: scale(0.97); }
+
+    /* ─── TYPING ─── */
+    .type-photo-wrap {
+      width: min(300px,80vw); height: min(320px,40vw);
+      border-radius: 16px; overflow: hidden;
+      border: 1px solid #2a2a35; background: #1a1a22;
+      margin-bottom: 24px; flex-shrink: 0;
+    }
+    .type-photo-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .type-form { display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%; }
+    .type-input {
+      width: 100%; padding: 13px 16px; border-radius: 12px;
+      border: 1px solid #2a2a40; background: #1a1a28;
+      color: #fff; font-size: 15px; outline: none;
+      transition: border-color 0.2s;
+      text-align: center;
+    }
+    .type-input:focus { border-color: #7c6af5; }
+    .type-input.correct { border-color: #22c55e; background: rgba(34,197,94,0.08); }
+    .type-input.wrong { border-color: #ef4444; background: rgba(239,68,68,0.08); }
+    .type-feedback {
+      font-size: 14px; min-height: 20px; text-align: center; font-weight: 500;
+    }
+    .type-feedback.correct { color: #22c55e; }
+    .type-feedback.wrong { color: #ef4444; }
+    .type-submit {
+      padding: 12px 32px; border-radius: 12px;
+      border: none; background: #7c6af5; color: #fff;
+      font-size: 15px; font-weight: 600; cursor: pointer;
+      transition: background 0.2s;
+    }
+    .type-submit:hover { background: #6b5ae0; }
+
+    /* ─── RESULTS ─── */
+    .results-box {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 16px; text-align: center; padding: 24px 0;
+    }
+    .results-score { font-size: 52px; font-weight: 800; color: #7c6af5; }
+    .results-label { font-size: 18px; font-weight: 600; }
+    .results-sub { font-size: 14px; color: #666; }
+    .results-actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-top: 8px; }
+    .btn-primary {
+      padding: 12px 24px; border-radius: 12px; border: none;
+      background: #7c6af5; color: #fff; font-size: 15px; font-weight: 600;
+      cursor: pointer; transition: background 0.2s;
+    }
+    .btn-primary:hover { background: #6b5ae0; }
+    .btn-secondary {
+      padding: 12px 24px; border-radius: 12px;
+      border: 1px solid #2a2a40; background: #1a1a28;
+      color: #fff; font-size: 15px; font-weight: 600;
+      cursor: pointer; transition: background 0.2s, border-color 0.2s;
+    }
+    .btn-secondary:hover { background: #22223a; border-color: #555; }
+
+    /* ─── SEARCH CARD MODAL ─── */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px); z-index: 200;
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+    }
+    .modal-overlay.hidden { display: none; }
+    .modal-card {
+      background: #1a1a28; border: 1px solid #2a2a40;
+      border-radius: 20px; overflow: hidden;
+      max-width: 360px; width: 100%;
+      display: flex; flex-direction: column;
+    }
+    .modal-img { width: 100%; height: 260px; object-fit: cover; display: block; background: #252535; }
+    .modal-img.no-img {
+      display: flex; align-items: center; justify-content: center;
+      font-size: 80px; color: #3a3a50;
+    }
+    .modal-info { padding: 20px 24px 24px; display: flex; flex-direction: column; gap: 10px; }
+    .modal-company {
+      font-size: 11px; font-weight: 600; letter-spacing: 0.12em;
+      text-transform: uppercase; color: #7c6af5;
+    }
+    .modal-name { font-size: 22px; font-weight: 700; line-height: 1.2; }
+    .modal-title { font-size: 13px; color: #9090a8; line-height: 1.5; }
+    .modal-close {
+      margin-top: 4px; padding: 10px; border-radius: 10px;
+      border: 1px solid #2a2a40; background: none; color: #888;
+      cursor: pointer; font-size: 14px; transition: color 0.2s, border-color 0.2s;
+    }
+    .modal-close:hover { color: #fff; border-color: #555; }
   </style>
 </head>
 <body>
 
-  <!-- SELECTION SCREEN -->
-  <div id="selection">
-    <div class="sel-header">
-      <h1>SWE 2026 CEOs</h1>
-      <p>Choose a deck to study</p>
-    </div>
-    <div class="sel-buttons">
-      <button class="sel-btn" onclick="startDeck(0)">
-        <div class="btn-meta">
-          <div class="btn-label">Relevant Speakers</div>
-          <div class="btn-count">124 cards</div>
-        </div>
-        <div class="btn-arrow">→</div>
-      </button>
-      <button class="sel-btn" onclick="startDeck(1)">
-        <div class="btn-meta">
-          <div class="btn-label">Partners in the CEO Program</div>
-          <div class="btn-count">43 cards</div>
-        </div>
-        <div class="btn-arrow">→</div>
-      </button>
-      <button class="sel-btn disabled">
-        <div class="btn-meta">
-          <div class="btn-label">Full Partner Delegations</div>
-          <div class="btn-count">Coming soon</div>
-        </div>
-        <div class="btn-arrow">→</div>
-      </button>
-    </div>
+<!-- ─── HOME SCREEN ─── -->
+<div id="screen-home" class="screen active">
+  <div class="home-header">
+    <h1>SWE 2026 Faces</h1>
+    <p>Choose a deck to study</p>
   </div>
 
-  <!-- FLASHCARD SCREEN -->
-  <div id="flashcards">
-    <div class="top-bar">
-      <button class="back-btn" onclick="goBack()">← Back</button>
-      <div class="deck-title" id="deckTitle"></div>
-    </div>
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="searchInput" placeholder="Search by name, company, or title…" autocomplete="off" />
+    <div class="search-results" id="searchResults"></div>
+  </div>
 
-    <div class="counter">
-      Card <span id="current">1</span> of <span id="total">0</span>
-    </div>
+  <div class="deck-buttons" id="deckButtons"></div>
+</div>
 
-    <div class="scene" id="scene" onclick="flipCard()">
-      <div class="card" id="card">
-        <div class="card-face card-front" id="front">
-          <img id="photo" src="" alt="" />
-          <div class="flip-hint">click to flip</div>
-        </div>
-        <div class="card-face card-back" id="back">
-          <div class="company" id="b-company"></div>
-          <div class="divider"></div>
-          <div class="name" id="b-name"></div>
-          <div class="title" id="b-title"></div>
-        </div>
+<!-- ─── MODE SELECT SCREEN ─── -->
+<div id="screen-mode" class="screen">
+  <div class="study-topbar">
+    <button class="back-btn" onclick="showScreen('home')">← Back</button>
+    <div class="study-meta" id="modeDeckLabel"></div>
+  </div>
+  <div class="mode-header">
+    <h2>Choose a study mode</h2>
+    <p>How would you like to study this deck?</p>
+  </div>
+  <div class="mode-grid">
+    <div class="mode-card" onclick="startMode('flashcard')">
+      <div class="mode-icon">🃏</div>
+      <div class="mode-name">Flashcards</div>
+      <div class="mode-desc">Flip through cards at your own pace</div>
+    </div>
+    <div class="mode-card" onclick="startMode('multiple-choice')">
+      <div class="mode-icon">🎯</div>
+      <div class="mode-name">Multiple Choice</div>
+      <div class="mode-desc">Pick the right name from 4 options</div>
+    </div>
+    <div class="mode-card" onclick="startMode('type')">
+      <div class="mode-icon">⌨️</div>
+      <div class="mode-name">Type the Name</div>
+      <div class="mode-desc">Type who you're looking at</div>
+    </div>
+    <div class="mode-card" onclick="startMode('name-to-face')">
+      <div class="mode-icon">👤</div>
+      <div class="mode-name">Name → Face</div>
+      <div class="mode-desc">See name & title, guess the company</div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── FLASHCARD SCREEN ─── -->
+<div id="screen-flashcard" class="screen">
+  <div class="study-topbar">
+    <button class="back-btn" onclick="showScreen('mode')">← Back</button>
+    <div class="study-meta" id="fc-meta"></div>
+  </div>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="fc-progress"></div></div>
+  <div class="scene" onclick="flipCard()">
+    <div class="card" id="fc-card">
+      <div class="card-face card-front" id="fc-front">
+        <img id="fc-photo" src="" alt="" />
+        <div class="flip-hint">click to flip</div>
+      </div>
+      <div class="card-face card-back">
+        <div class="cb-company" id="fc-company"></div>
+        <div class="divider"></div>
+        <div class="cb-name" id="fc-name"></div>
+        <div class="cb-title" id="fc-title"></div>
       </div>
     </div>
-
-    <div class="nav">
-      <button class="nav-btn" id="prevBtn" onclick="go(-1)">&#8592;</button>
-      <button class="nav-btn" id="nextBtn" onclick="go(1)">&#8594;</button>
-    </div>
-
-    <div class="progress" id="dots"></div>
-    <div style="display:flex;gap:16px;align-items:center;">
-      <button class="shuffle-btn" id="shuffleBtn" onclick="shuffleDeck()">⇄ Shuffle</button>
-    </div>
-    <div class="hint">Use ← → arrow keys to navigate</div>
   </div>
+  <div class="fc-nav">
+    <button class="nav-btn" id="fc-prev" onclick="fcGo(-1)">←</button>
+    <button class="nav-btn" id="fc-next" onclick="fcGo(1)">→</button>
+  </div>
+  <button class="shuffle-btn" id="fc-shuffle" onclick="fcShuffle()">⇄ Shuffle</button>
+  <div class="dots-row" id="fc-dots"></div>
+  <div class="kbd-hint">← → to navigate · Space to flip</div>
+</div>
+
+<!-- ─── MULTIPLE CHOICE SCREEN ─── -->
+<div id="screen-multiple-choice" class="screen">
+  <div class="study-topbar">
+    <button class="back-btn" onclick="showScreen('mode')">← Back</button>
+    <div class="study-meta" id="mc-meta"></div>
+  </div>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="mc-progress"></div></div>
+  <div class="score-badge" id="mc-score">Score: 0 / 0</div>
+  <div class="mc-photo-wrap">
+    <img id="mc-photo" src="" alt="" />
+  </div>
+  <div class="mc-options" id="mc-options"></div>
+  <button class="mc-next" id="mc-next" onclick="mcNext()" style="display:none">Next →</button>
+</div>
+
+<!-- ─── TYPING SCREEN ─── -->
+<div id="screen-type" class="screen">
+  <div class="study-topbar">
+    <button class="back-btn" onclick="showScreen('mode')">← Back</button>
+    <div class="study-meta" id="type-meta"></div>
+  </div>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="type-progress"></div></div>
+  <div class="score-badge" id="type-score">Score: 0 / 0</div>
+  <div class="type-photo-wrap">
+    <img id="type-photo" src="" alt="" />
+  </div>
+  <div class="type-form">
+    <input type="text" id="type-input" class="type-input" placeholder="Type the person's name…" autocomplete="off" />
+    <div class="type-feedback" id="type-feedback"></div>
+    <button class="type-submit" id="type-submit" onclick="typeCheck()">Check</button>
+  </div>
+</div>
+
+<!-- ─── NAME→FACE SCREEN ─── -->
+<div id="screen-name-to-face" class="screen">
+  <div class="study-topbar">
+    <button class="back-btn" onclick="showScreen('mode')">← Back</button>
+    <div class="study-meta" id="ntf-meta"></div>
+  </div>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="ntf-progress"></div></div>
+  <div class="score-badge" id="ntf-score">Score: 0 / 0</div>
+  <!-- Shows name + title, user picks company from 4 options -->
+  <div style="text-align:center; margin-bottom:20px; padding:0 8px;">
+    <div style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:#555;margin-bottom:8px;">Who is this?</div>
+    <div style="font-size:clamp(20px,4vw,26px);font-weight:700;line-height:1.3;" id="ntf-name"></div>
+    <div style="font-size:13px;color:#9090a8;margin-top:6px;line-height:1.5;" id="ntf-title"></div>
+  </div>
+  <div class="mc-options" id="ntf-options"></div>
+  <button class="mc-next" id="ntf-next" onclick="ntfNext()" style="display:none">Next →</button>
+</div>
+
+<!-- ─── RESULTS SCREEN ─── -->
+<div id="screen-results" class="screen">
+  <div class="study-topbar">
+    <button class="back-btn" onclick="showScreen('home')">← Home</button>
+  </div>
+  <div class="results-box">
+    <div class="results-score" id="res-score"></div>
+    <div class="results-label" id="res-label"></div>
+    <div class="results-sub" id="res-sub"></div>
+    <div class="results-actions">
+      <button class="btn-primary" onclick="restartMode()">Try Again</button>
+      <button class="btn-secondary" onclick="showScreen('mode')">Change Mode</button>
+      <button class="btn-secondary" onclick="showScreen('home')">Home</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── SEARCH RESULT MODAL ─── -->
+<div class="modal-overlay hidden" id="searchModal" onclick="closeModal(event)">
+  <div class="modal-card">
+    <img id="modal-img" src="" alt="" class="modal-img" />
+    <div class="modal-info">
+      <div class="modal-company" id="modal-company"></div>
+      <div class="modal-name" id="modal-name"></div>
+      <div class="modal-title" id="modal-title"></div>
+      <button class="modal-close" onclick="document.getElementById('searchModal').classList.add('hidden')">Close</button>
+    </div>
+  </div>
+</div>
 
 <script>
-const decks = [
+// ─── CSV LOADER ─────────────────────────────────────────
+function parseCSV(text) {
+  const lines = text.split(/\r?\n/).filter(l => l.trim());
+  const rows = [];
+  for (const line of lines) {
+    const fields = [];
+    let cur = '', inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '"') {
+        if (inQ && line[i+1] === '"') { cur += '"'; i++; }
+        else inQ = !inQ;
+      } else if (ch === ',' && !inQ) {
+        fields.push(cur.trim()); cur = '';
+      } else cur += ch;
+    }
+    fields.push(cur.trim());
+    rows.push(fields);
+  }
+  if (rows.length < 2) return [];
+  return rows.slice(1).map(r => ({
+    company: r[0] || '',
+    name: r[1] || '',
+    title: r[2] || '',
+    image: r[3] || ''
+  })).filter(c => c.name);
+}
+
+// ─── DATA ───────────────────────────────────────────────
+const deckConfig = [
+  { name: "Relevant Speakers",          file: "data/relevant-speakers.csv",       shuffleable: true  },
+  { name: "Partners in the CEO Program",file: "data/partners-ceo-program.csv",    shuffleable: true  },
+  { name: "Full Partner Delegations",   file: "data/full-partner-delegations.csv",shuffleable: false }
+];
+
+// Populated after CSV fetch; used as fallback until load completes
+let decks = deckConfig.map(d => ({ name: d.name, shuffleable: d.shuffleable, cards: [] }));
+
+// Load all CSVs then boot the app
+Promise.all(deckConfig.map(d =>
+  fetch(d.file).then(r => r.ok ? r.text() : '').catch(() => '')
+)).then(texts => {
+  texts.forEach((text, i) => { decks[i].cards = parseCSV(text); });
+  bootApp();
+});
+
+// ─── FALLBACK INLINE DATA (used only if fetch fails e.g. file://) ───
+const _fallbackDecks = [
   {
     name: "Relevant Speakers",
+    shuffleable: true,
     cards: [
       {"company":"Aetna","name":"Steve Nelson","title":"Executive Vice President, CVS Health and President, Aetna","image":"https://s.hdnux.com/photos/01/45/40/54/26610474/5/1920x0.jpg"},
       {"company":"AlixPartners","name":"David Garfield","title":"Co-CEO","image":"https://media.licdn.com/dms/image/v2/D5603AQGErsk5hyH2UQ/profile-displayphoto-scale_400_400/B56Zh2Bm9iHkAs-/0/1754326796558?e=1776297600&v=beta&t=_ilShSXeEJku_IosOTIzrexbKR-7dYITzpwP0MyK-TY"},
@@ -499,55 +627,56 @@ const decks = [
       {"company":"KKR","name":"Henry Kravis","title":"Co-Founder & Co-Executive Chairman","image":"https://www.kkr.com/content/dam/kkr/bio/headshots/Henry%20R.%20Kravis.jpg"},
       {"company":"KKR","name":"Kareem Daniel","title":"Executive Advisor","image":"https://media.licdn.com/dms/image/v2/C5103AQGN19JUg0xgrw/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1517363397753?e=1776297600&v=beta&t=nvOWjzO0dw4pte0C9FJP0UraPm43s3tFMug5e3KggKk"},
       {"company":"KPMG","name":"Matthew (Matt) Miner","title":"General Counsel & Vice Chair, Legal, Risk Management and Compliance for KPMG LLP (US)","image":"https://media.licdn.com/dms/image/v2/D5603AQHkIEb-mTQ2yw/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1711138295821?e=1776297600&v=beta&t=QhNwaDA_il2lQ-F9Qal948kj6SRnlrc5CrQ4_C1brqg"},
-      {"company":"KPMG","name":"Tim Walsh","title":"Chair and CEO","image":"https://media.licdn.com/dms/image/v2/D4E03AQG5qb128tilFA/profile-displayphoto-crop_800_800/B4EZfwWn4THsAM-/0/1752084152348?e=1776297600&v=beta&t=w8-CBs2kd3utt-NRHAoOaIxJkzLfwJoakCtJLOslNKq0"},
+      {"company":"KPMG","name":"Tim Walsh","title":"Chair and CEO","image":"https://media.licdn.com/dms/image/v2/D4E03AQG5qb128tilFA/profile-displayphoto-crop_800_800/B4EZfwWn4THsAM-/0/1752084152348?e=1776297600&v=beta&t=w8-CBs2kd3utt-NRHoQaIxJkzLfwJoakCtJLOslNKq0"},
       {"company":"Kyndryl","name":"Martin Schroeter","title":"Chairman & CEO","image":"https://s7d1.scene7.com/is/image/kyndryl/m_shroeter_index?qlt=85"},
       {"company":"Lazard","name":"Peter Orszag","title":"CEO & Chairman","image":"https://images.fnlondon.com/im-48854624?width=1280&size=1"},
       {"company":"Lilly","name":"David Ricks","title":"Chair and CEO","image":"https://www.statnews.com/wp-content/uploads/2025/03/Dave-Ricks-645x645.jpg"},
       {"company":"LinkedIn","name":"Blake Lawit","title":"Chief Global Affairs and Legal Officer","image":"https://media.licdn.com/dms/image/v2/D5603AQFOZ34R_BLUFg/profile-displayphoto-scale_400_400/B56ZxNltzyHoAg-/0/1770828273859?e=1776297600&v=beta&t=9m9ri3kskXR2nmI76kr6H49d2sGhivC4sq1RckKjrZA"},
       {"company":"LinkedIn","name":"Reid Hoffman","title":"Co-founder of LinkedIn & Manas AI","image":"https://media.licdn.com/dms/image/v2/D5603AQHW7wKzPb3DAg/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1718216204174?e=2147483647&v=beta&t=_CCpDriOmxYQ2dvuyVwU7D63RyTduLzslIJTP75N9eQ"},
       {"company":"Lippincott","name":"Michael D'Esopo","title":"CEO","image":"https://media.licdn.com/dms/image/v2/D4E03AQFwdV4Zr8t20w/profile-displayphoto-scale_200_200/B4EZobBhP3JgAY-/0/1761389975052?e=2147483647&v=beta&t=mPLkAxI2EUpNXaSMac6Y-fDqvRQ3zje3_hidZa61bqQ"},
-      {"company":"Lippincott","name":"Taddy Hall","title":"Senior Partner, Experience Innovation/Strategy","image":""},
-      {"company":"Lucid Group","name":"Nichelle Maynard-Elliott","title":"Independent Director, Xerox and Independent Director, Lucid Group","image":""},
-      {"company":"Lucid Motors","name":"Marc Winterhoff","title":"Interim CEO","image":""},
-      {"company":"Lumen Technologies","name":"Kate Johnson","title":"President & CEO","image":""},
-      {"company":"Mastercard","name":"Merit Janow","title":"Chair of the Board","image":""},
-      {"company":"McCourt Global","name":"Frank McCourt","title":"Executive Chairman; Founder, Project Liberty","image":""},
-      {"company":"McKinsey & Company","name":"Daniel Pacthod","title":"Senior Partner; Chair, Leadership Initiative, New York","image":""},
-      {"company":"McKinsey & Company","name":"Eric Kutcher","title":"Chair, North America","image":""},
-      {"company":"Meta","name":"Dina Powell McCormick","title":"President & Vice Chairman","image":""},
+      {"company":"Lippincott","name":"Taddy Hall","title":"Senior Partner, Experience Innovation/Strategy","image":"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQC6SpL3Q42598qRAnEkJgXe1TuH_Y1ELK-5Q&s"},
+      {"company":"Lucid Group","name":"Nichelle Maynard-Elliott","title":"Independent Director, Xerox and Independent Director, Lucid Group","image":"https://conferences.law.stanford.edu/directorscollege2026/wp-content/uploads/sites/222/2025/05/MaynardElliott_0107MFox_Nov4_2020-Edit-scaled.jpg"},
+      {"company":"Lucid Motors","name":"Marc Winterhoff","title":"Interim CEO","image":"https://mma.prnewswire.com/media/2269939/Lucid_Marc_Winterhoff_Chief_Operating_Officer.jpg"},
+      {"company":"Lumen Technologies","name":"Kate Johnson","title":"President & CEO","image":"https://assets.lumen.com/is/image/Lumen/kate-johnson-350x350?Creativeid=38b5aee8-ac26-4847-a889-237eceb80fd7"},
+      {"company":"Mastercard","name":"Merit Janow","title":"Chair of the Board","image":"https://mma.prnewswire.com/media/2458627/Merit_E_Janow_mastercard.jpg?p=twitter"},
+      {"company":"McCourt Global","name":"Frank McCourt","title":"Executive Chairman; Founder, Project Liberty","image":"https://mccourtpartners.com/wp-content/uploads/2023/06/frank.jpg"},
+      {"company":"McKinsey & Company","name":"Daniel Pacthod","title":"Senior Partner; Chair, Leadership Initiative, New York","image":"https://www.mckinsey.com/~/media/mckinsey/our%20people/daniel%20pacthod/daniel_pacthod_5093_fc_mask_profile_1536x1152.jpg"},
+      {"company":"McKinsey & Company","name":"Eric Kutcher","title":"Chair, North America","image":"https://imageio.forbes.com/specials-images/imageserve/6679cf991a12aa47fb7be3ca/0x0.jpg?format=jpg&height=900&width=1600&fit=bounds"},
+      {"company":"Meta","name":"Dina Powell McCormick","title":"President & Vice Chairman","image":"https://www.aspensecurityforum.org/wp-content/uploads/2025/04/McCormick-Dina-Powell-750sq.jpg"},
       {"company":"Microsoft AI","name":"Mustafa Suleyman","title":"CEO","image":"https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Mustafa_Suleyman_photo_%28cropped%29.jpg/960px-Mustafa_Suleyman_photo_%28cropped%29.jpg"},
       {"company":"NRG","name":"Matt Carter","title":"Chair, Nominating & Governance Committee","image":"https://media.licdn.com/dms/image/v2/C5103AQFaPP016X9dzw/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1516332887594?e=1776297600&v=beta&t=s8p9kH4NoUhUEeJV8EnXQEO2afuaJeJlALAlcRNu8L8"},
-      {"company":"onsemi","name":"Hassane El-Khoury","title":"President & CEO","image":""},
-      {"company":"Pearson","name":"Omar Abbosh","title":"CEO","image":""},
+      {"company":"onsemi","name":"Hassane El-Khoury","title":"President & CEO","image":"https://www.onsemi.com/site/images/Hassane%20El-Khoury-min.jpg"},
+      {"company":"Pearson","name":"Omar Abbosh","title":"CEO","image":"https://plc.pearson.com/sites/pearson-corp/files/styles/desktop/public/2024-02/omar-abbosh-BI9A9000A-bod.jpg?itok=MAgbksg5"},
       {"company":"Pfizer","name":"Albert Bourla","title":"CEO","image":"https://cdn.pfizer.com/pfizercom/styles/original_image/s3/2025-09/albert_bourla_2025_400x600.jpg.webp?VersionId=Ft4feUbisEwvMVnVmyjeSayAD_BjBxaq&itok=Pp77qA7F"},
       {"company":"PMI","name":"Jacek Olczak","title":"CEO","image":"https://www.pmi.com/content/dam/pmicom/global/images/board-of-directors/jacek-olczak-ceo-pmi.jpg?imwidth=2048&imdensity=2"},
       {"company":"PMI","name":"Stacey Kennedy","title":"CEO, US","image":"https://media.licdn.com/dms/image/v2/D4E03AQHRhkZqWRGcEA/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1680786248381?e=1776297600&v=beta&t=tmGmkJKprN59cT44QyeyXxkJkndFmDIE4ZxxOb6NfO0"},
-      {"company":"PNC","name":"Bill Demchak","title":"Chairman and CEO","image":""},
-      {"company":"PwC US","name":"Dan Priest","title":"Chief AI Officer","image":""},
-      {"company":"PwC US","name":"Michelle Horton","title":"Principal","image":""},
-      {"company":"PwC US","name":"Paul Griggs","title":"US Senior Partner & CEO","image":""},
-      {"company":"Qualcomm Incorporated","name":"Cristiano Amon","title":"President & CEO","image":""},
-      {"company":"Ralph Lauren","name":"Patrice Louvet","title":"President & CEO","image":""},
-      {"company":"Ripple","name":"Brad Garlinghouse","title":"CEO","image":""},
+      {"company":"PNC","name":"Bill Demchak","title":"Chairman and CEO","image":"https://www.pnc.com/en/about-pnc/company-profile/leadership-team/william-s-demchak/_jcr_content/main/pageHead/container/embeddedGrid/image_819093175.coreimg.jpeg/1760967570694/bio-bill-demchak.jpeg"},
+      {"company":"PwC US","name":"Dan Priest","title":"Chief AI Officer","image":"https://www.pwc.com/us/en/about-us/newsroom/img/dan-priest-headshot.jpg"},
+      {"company":"PwC US","name":"Michelle Horton","title":"Principal","image":"https://media.licdn.com/dms/image/v2/D4D03AQFcvZh2HgecQw/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1681781533195?e=2147483647&v=beta&t=YeZ2FJSb7KvSC5BKozr10KhnO5e5lh2c8duM3OgSL9w"},
+      {"company":"PwC US","name":"Paul Griggs","title":"US Senior Partner & CEO","image":"https://www.pwc.com/gx/en/contacts/paul-griggs-headshot.jpeg"},
+      {"company":"Qualcomm Incorporated","name":"Cristiano Amon","title":"President & CEO","image":"https://s7d1.scene7.com/is/image/dmqualcommprod/cristiano-2024-headshot-585x585?$QC_Responsive$&fmt=png-alpha"},
+      {"company":"Ralph Lauren","name":"Patrice Louvet","title":"President & CEO","image":"https://cloudfront-eu-central-1.images.arcpublishing.com/businessoffashion/OQ5HVQG46BEAPPA7WG7NLVTSXU.jpg"},
+      {"company":"Ripple","name":"Brad Garlinghouse","title":"CEO","image":"https://media.licdn.com/dms/image/v2/D4D03AQF-yszFi_QzmQ/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1694660209775?e=2147483647&v=beta&t=kliJIz-Gf8iCMMfYo9gklsrXkBxEGNlXekU5eLHWl9o"},
       {"company":"Royal Bank of Canada","name":"David McKay","title":"President & CEO","image":"https://www.canadianclub.org/wp-content/uploads/2024/08/profile-dave-mckay.jpg"},
-      {"company":"SAP SE","name":"Christian Klein","title":"CEO","image":""},
+      {"company":"SAP","name":"Christian Klein","title":"CEO","image":"https://content.cdn.sap.com/is/image/sap/christian-klein"},
       {"company":"Saudi Arabia","name":"HRH Princess Reema Bandar Al Saud","title":"Ambassador to the United States","image":"https://www.edrmagazine.eu/wp-content/uploads/2024/01/HRH-Ambassador-Reema-bint-Bandar-Al-Saud.jpg"},
-      {"company":"Schneider Electric","name":"Aamir Paul","title":"President, North America Operations","image":""},
-      {"company":"SkyBridge Capital","name":"Anthony Scaramucci","title":"Founder & Managing Partner","image":""},
-      {"company":"Stand Together","name":"Brian Hooks","title":"Chairman and CEO","image":""},
-      {"company":"Standard Bank Group","name":"Simpiwe Tshabalala","title":"Group Chief Executive","image":""},
-      {"company":"Tata Sons","name":"Natarajan Chandrasekaran","title":"Chairman","image":""},
-      {"company":"TIAA","name":"Thasunda Brown Duckett","title":"President and CEO","image":""},
-      {"company":"TotalEnergies","name":"Patrick Pouyanné","title":"Chairman and CEO","image":""},
-      {"company":"Udemy","name":"Hugo Sarrazin","title":"CEO","image":""},
-      {"company":"Verizon","name":"Dan Schulman","title":"CEO","image":""},
-      {"company":"Verizon","name":"Franz Paasche","title":"Executive Vice President, Corporate Affairs","image":""},
-      {"company":"WeWork","name":"John Santora","title":"Chief Executive Officer","image":""},
-      {"company":"Willett Advisors","name":"Steve Rattner","title":"Chairman & CEO","image":""}
+      {"company":"Schneider Electric","name":"Aamir Paul","title":"President, North America Operations","image":"https://www.se.com/us/en/assets/wiztopic/60671086eca0ed09c56b3a63/Aami-Paul-Ex-Frame-dark-IC-490x490-jpg_square.jpg"},
+      {"company":"SkyBridge Capital","name":"Anthony Scaramucci","title":"Founder & Managing Partner","image":"https://res.cloudinary.com/bizzaboprod/image/upload/f_auto,c_scale,c_crop,g_custom/v1701787891/twus99h6fhm6nugjntts"},
+      {"company":"Stand Together","name":"Brian Hooks","title":"Chairman and CEO","image":"https://cdn.prod.website-files.com/5e559bb4c06b8960e62b5105/5e559bb4c06b89c1ad2b5fd7_a4df4da5-6057-47dc-ac0f-1430933fcfb5-p-800.jpeg"},
+      {"company":"Standard Bank Group","name":"Simpiwe Tshabalala","title":"Group CEO","image":"https://www.standardbank.com/static_file/SBG/Assets/Img/Standard%20Bank%20Group/Leadership/2024/GLC/Q3/Sim%20Tshabalala/Sim_not-compressed_Portrait_sq_300x300.jpg"},
+      {"company":"Tata Sons","name":"Natarajan Chandrasekaran","title":"Chairman","image":"https://www.nyas.org/wp-content/uploads/2023/10/Natarajan-Chandrasekarak.png"},
+      {"company":"TIAA","name":"Thasunda Brown Duckett","title":"President and CEO","image":"https://imageio.forbes.com/specials-images/imageserve/6390b221728b3fc21208ccf8/0x0.jpg?format=jpg&crop=1567,1566,x838,y104,safe&height=416&width=416&fit=bounds"},
+      {"company":"TotalEnergies","name":"Patrick Pouyanné","title":"Chairman and CEO","image":"https://www.atlanticcouncil.org/wp-content/uploads/2023/01/Patrick-Pouyanne_HD.jpg"},
+      {"company":"Udemy","name":"Hugo Sarrazin","title":"CEO","image":"https://mms.businesswire.com/media/20250311257338/en/2407236/4/Sarrazin_Hugo_Headshot.jpg"},
+      {"company":"Verizon","name":"Dan Schulman","title":"CEO","image":"https://www.verizon.com/about/sites/default/files/2023-04/dan_schulman_bio_photo_300x375.jpg"},
+      {"company":"Verizon","name":"Franz Paasche","title":"Executive Vice President, Corporate Affairs","image":"https://ss7.vzw.com/is/image/VerizonWireless/Leadership%20&%20Board%20of%20Directors%20-%20Leadership%20-%20Franz%20Paasche%20-%2021_9%20(1)?resMode=sharp2&scl=1"},
+      {"company":"WeWork","name":"John Santora","title":"Chief Executive Officer","image":"https://rumcsi.org/wp-content/uploads/2020/12/John-C.-Santora-update.jpg"},
+      {"company":"Willett Advisors","name":"Steve Rattner","title":"Chairman & CEO","image":"https://media.licdn.com/dms/image/v2/D4E03AQGOAd1F4npNDg/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1673641445923?e=2147483647&v=beta&t=kWOCYq9u75U0KklIoXbJGMPNaM86JKYqw0WmSmp7IHc"}
     ]
   },
   {
     name: "Partners in the CEO Program",
+    shuffleable: true,
     cards: [
       {"company":"Bank of America","name":"Claudio Irigoyen","title":"Managing Director - Head of Global Economics","image":"https://media.licdn.com/dms/image/v2/C4D03AQGEWhlCzQApuw/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1609297200876?e=1776297600&v=beta&t=lhFs3qhcXMv1TZcUsH93ZXSuTc9qXZtcqj0BBLBF6tA"},
       {"company":"Bank of America","name":"Hari Gopalkrishnan","title":"Chief Technology and Information Officer","image":"https://media.licdn.com/dms/image/v2/D4E03AQEaOTF9hqd90g/profile-displayphoto-scale_400_400/B4EZo8MeYSIIAg-/0/1761946495919?e=1776297600&v=beta&t=GiLf5MepP8rbGL-QpNNyxVk2bIiuRYSsmxU06Y1qL68"},
@@ -577,51 +706,43 @@ const decks = [
       {"company":"Infosys Limited","name":"Nandan M. Nilekani","title":"Co-founder and Chairman of the Board","image":"https://www.infosys.com/content/dam/infosys-web/en/global-resource/photos/nandan.jpg"},
       {"company":"Infosys Limited","name":"Salil Parekh","title":"CEO & Managing Director","image":"https://www.infosys.com/content/dam/infosys-web/en/global-resource/photos/salil-parekh.jpg"},
       {"company":"KPMG","name":"Matthew (Matt) Miner","title":"General Counsel & Vice Chair, Legal, Risk Management and Compliance","image":"https://media.licdn.com/dms/image/v2/D5603AQHkIEb-mTQ2yw/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1711138295821?e=1776297600&v=beta&t=QhNwaDA_il2lQ-F9Qal948kj6SRnlrc5CrQ4_C1brqg"},
-      {"company":"KPMG","name":"Tim Walsh","title":"Chair and CEO","image":"https://media.licdn.com/dms/image/v2/D4E03AQG5qb128tilFA/profile-displayphoto-crop_800_800/B4EZfwWn4THsAM-/0/1752084152348?e=1776297600&v=beta&t=w8-CBs2kd3utt-NRHAoOaIxJkzLfwJoakCtJLOslNKq0"},
+      {"company":"KPMG","name":"Tim Walsh","title":"Chair and CEO","image":"https://media.licdn.com/dms/image/v2/D4E03AQG5qb128tilFA/profile-displayphoto-crop_800_800/B4EZfwWn4THsAM-/0/1752084152348?e=1776297600&v=beta&t=w8-CBs2kd3utt-NRHoQaIxJkzLfwJoakCtJLOslNKq0"},
       {"company":"LinkedIn","name":"Blake Lawit","title":"Chief Global Affairs and Legal Officer","image":"https://media.licdn.com/dms/image/v2/D5603AQFOZ34R_BLUFg/profile-displayphoto-scale_400_400/B56ZxNltzyHoAg-/0/1770828273859?e=1776297600&v=beta&t=9m9ri3kskXR2nmI76kr6H49d2sGhivC4sq1RckKjrZA"},
       {"company":"Lippincott","name":"Michael D'Esopo","title":"CEO","image":"https://media.licdn.com/dms/image/v2/D4E03AQFwdV4Zr8t20w/profile-displayphoto-scale_200_200/B4EZobBhP3JgAY-/0/1761389975052?e=2147483647&v=beta&t=mPLkAxI2EUpNXaSMac6Y-fDqvRQ3zje3_hidZa61bqQ"},
-      {"company":"Lippincott","name":"Taddy Hall","title":"Senior Partner, Experience Innovation/Strategy","image":""},
+      {"company":"Lippincott","name":"Taddy Hall","title":"Senior Partner, Experience Innovation/Strategy","image":"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQC6SpL3Q42598qRAnEkJgXe1TuH_Y1ELK-5Q&s"},
       {"company":"PMI","name":"Jacek Olczak","title":"CEO","image":"https://www.pmi.com/content/dam/pmicom/global/images/board-of-directors/jacek-olczak-ceo-pmi.jpg?imwidth=2048&imdensity=2"},
       {"company":"PMI US","name":"Stacey Kennedy","title":"CEO","image":"https://media.licdn.com/dms/image/v2/D4E03AQHRhkZqWRGcEA/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1680786248381?e=1776297600&v=beta&t=tmGmkJKprN59cT44QyeyXxkJkndFmDIE4ZxxOb6NfO0"},
-      {"company":"PwC US","name":"Dan Priest","title":"Chief AI Officer","image":""},
+      {"company":"PwC US","name":"Dan Priest","title":"Chief AI Officer","image":"https://www.pwc.com/us/en/about-us/newsroom/img/dan-priest-headshot.jpg"},
       {"company":"PwC US","name":"Kathryn Kaminsky","title":"Chief Commercial Officer","image":""},
-      {"company":"PwC US","name":"Michelle Horton","title":"Principal","image":""},
-      {"company":"PwC US","name":"Paul Griggs","title":"US Senior Partner & CEO","image":""},
-      {"company":"Schneider Electric","name":"Aamir Paul","title":"President, North America Operations","image":""},
-      {"company":"Stand Together","name":"Brian Hooks","title":"Chairman and CEO","image":""},
-      {"company":"Verizon","name":"Dan Schulman","title":"CEO","image":""},
-      {"company":"Verizon","name":"Franz Paasche","title":"Executive Vice President, Corporate Affairs","image":""},
+      {"company":"PwC US","name":"Michelle Horton","title":"Principal","image":"https://media.licdn.com/dms/image/v2/D4D03AQFcvZh2HgecQw/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1681781533195?e=2147483647&v=beta&t=YeZ2FJSb7KvSC5BKozr10KhnO5e5lh2c8duM3OgSL9w"},
+      {"company":"PwC US","name":"Paul Griggs","title":"US Senior Partner & CEO","image":"https://www.pwc.com/gx/en/contacts/paul-griggs-headshot.jpeg"},
+      {"company":"Schneider Electric","name":"Aamir Paul","title":"President, North America Operations","image":"https://www.se.com/us/en/assets/wiztopic/60671086eca0ed09c56b3a63/Aami-Paul-Ex-Frame-dark-IC-490x490-jpg_square.jpg"},
+      {"company":"Stand Together","name":"Brian Hooks","title":"Chairman and CEO","image":"https://cdn.prod.website-files.com/5e559bb4c06b8960e62b5105/5e559bb4c06b89c1ad2b5fd7_a4df4da5-6057-47dc-ac0f-1430933fcfb5-p-800.jpeg"},
+      {"company":"Verizon","name":"Dan Schulman","title":"CEO","image":"https://www.verizon.com/about/sites/default/files/2023-04/dan_schulman_bio_photo_300x375.jpg"},
+      {"company":"Verizon","name":"Franz Paasche","title":"Executive Vice President, Corporate Affairs","image":"https://ss7.vzw.com/is/image/VerizonWireless/Leadership%20&%20Board%20of%20Directors%20-%20Leadership%20-%20Franz%20Paasche%20-%2021_9%20(1)?resMode=sharp2&scl=1"},
       {"company":"West Health","name":"Shelley Lyford","title":"CEO","image":""}
     ]
   },
   {
     name: "Full Partner Delegations",
-    cards: [] // coming soon
+    shuffleable: false,
+    cards: []
   }
 ];
 
-let currentDeck = null;
-let index = 0;
-let flipped = false;
+function bootApp() {
+  // If fetch succeeded, use fetched data; otherwise use fallback inline data
+  decks.forEach((d, i) => {
+    if (d.cards.length === 0 && _fallbackDecks[i] && _fallbackDecks[i].cards.length > 0) {
+      d.cards = _fallbackDecks[i].cards;
+    }
+  });
+  // Re-render deck buttons with updated counts
+  renderDeckButtons();
+  rebuildSearchIndex();
+}
 
-const selectionEl = document.getElementById('selection');
-const flashcardsEl = document.getElementById('flashcards');
-const card = document.getElementById('card');
-const photo = document.getElementById('photo');
-const front = document.getElementById('front');
-const bCompany = document.getElementById('b-company');
-const bName = document.getElementById('b-name');
-const bTitle = document.getElementById('b-title');
-const currentEl = document.getElementById('current');
-const totalEl = document.getElementById('total');
-const prevBtn = document.getElementById('prevBtn');
-const nextBtn = document.getElementById('nextBtn');
-const dotsEl = document.getElementById('dots');
-const deckTitleEl = document.getElementById('deckTitle');
-const shuffleBtn = document.getElementById('shuffleBtn');
-
-let activeCards = []; // working copy (possibly shuffled)
-
+// ─── UTILITIES ──────────────────────────────────────────
 function shuffle(arr) {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -631,109 +752,351 @@ function shuffle(arr) {
   return a;
 }
 
-// Update deck card counts in buttons
-document.querySelectorAll('.sel-btn:not(.disabled)').forEach((btn, i) => {
-  const count = decks[i].cards.length;
-  btn.querySelector('.btn-count').textContent = count + ' cards';
+function setImg(el, src) {
+  if (src) { el.src = src; el.style.display = 'block'; }
+  else { el.src = ''; el.style.display = 'none'; }
+}
+
+// ─── STATE ──────────────────────────────────────────────
+let currentDeckIdx = null;
+let currentMode = null;
+let activeCards = [];
+let studyIndex = 0;
+let score = 0;
+let answered = 0;
+
+// ─── SCREENS ────────────────────────────────────────────
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// ─── HOME SETUP ─────────────────────────────────────────
+const deckButtonsEl = document.getElementById('deckButtons');
+
+function renderDeckButtons() {
+  deckButtonsEl.innerHTML = '';
+  decks.forEach((deck, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'deck-btn' + (deck.cards.length === 0 ? ' disabled' : '');
+    btn.innerHTML = `
+      <div>
+        <div class="btn-label">${deck.name}</div>
+        <div class="btn-count">${deck.cards.length > 0 ? deck.cards.length + ' cards' : 'Coming soon'}</div>
+      </div>
+      <div class="btn-arrow">→</div>`;
+    if (deck.cards.length > 0) btn.onclick = () => selectDeck(i);
+    deckButtonsEl.appendChild(btn);
+  });
+}
+renderDeckButtons();
+
+function selectDeck(i) {
+  currentDeckIdx = i;
+  document.getElementById('modeDeckLabel').textContent = decks[i].name;
+  showScreen('mode');
+}
+
+// ─── SEARCH ─────────────────────────────────────────────
+const searchInput = document.getElementById('searchInput');
+const searchResults = document.getElementById('searchResults');
+let allCards = [];
+function rebuildSearchIndex() {
+  allCards = decks.flatMap((d, di) => d.cards.map(c => ({ ...c, deckName: d.name, deckIdx: di })));
+}
+rebuildSearchIndex();
+
+searchInput.addEventListener('input', () => {
+  const q = searchInput.value.trim().toLowerCase();
+  if (!q) { searchResults.classList.remove('open'); return; }
+  const matches = allCards.filter(c =>
+    c.name.toLowerCase().includes(q) ||
+    c.company.toLowerCase().includes(q) ||
+    c.title.toLowerCase().includes(q)
+  ).slice(0, 12);
+  if (matches.length === 0) {
+    searchResults.innerHTML = '<div class="search-no-results">No results found</div>';
+  } else {
+    searchResults.innerHTML = matches.map((c, i) => `
+      <div class="search-result-item" onclick="openModal(${allCards.indexOf(c)})">
+        ${c.image ? `<img class="sri-photo" src="${c.image}" alt="" onerror="this.style.display='none'" />` : '<div class="sri-photo" style="display:flex;align-items:center;justify-content:center;font-size:18px">👤</div>'}
+        <div class="sri-info">
+          <div class="sri-name">${c.name}</div>
+          <div class="sri-meta">${c.company}</div>
+        </div>
+        <div class="sri-deck">${c.deckName}</div>
+      </div>`).join('');
+  }
+  searchResults.classList.add('open');
 });
 
-function startDeck(i) {
-  currentDeck = decks[i];
-  index = 0;
-  flipped = false;
-  deckTitleEl.textContent = currentDeck.name;
+document.addEventListener('click', e => {
+  if (!e.target.closest('.search-wrap')) searchResults.classList.remove('open');
+});
 
-  // Decks 0 and 1 shuffle on start; deck 2 keeps original order
-  const shouldShuffle = i < 2;
-  activeCards = shouldShuffle ? shuffle(currentDeck.cards) : [...currentDeck.cards];
-
-  // Show/hide shuffle button
-  shuffleBtn.classList.toggle('hidden', !shouldShuffle);
-
-  buildDots();
-  totalEl.textContent = activeCards.length;
-  selectionEl.style.display = 'none';
-  flashcardsEl.style.display = 'flex';
-  render();
+function openModal(cardIdx) {
+  const c = allCards[cardIdx];
+  const imgEl = document.getElementById('modal-img');
+  if (c.image) {
+    imgEl.src = c.image;
+    imgEl.className = 'modal-img';
+    imgEl.style.display = 'block';
+  } else {
+    imgEl.style.display = 'none';
+  }
+  document.getElementById('modal-company').textContent = c.company;
+  document.getElementById('modal-name').textContent = c.name;
+  document.getElementById('modal-title').textContent = c.title;
+  document.getElementById('searchModal').classList.remove('hidden');
+  searchResults.classList.remove('open');
+  searchInput.value = '';
 }
 
-function shuffleDeck() {
-  activeCards = shuffle(currentDeck.cards);
-  index = 0;
-  buildDots();
-  render();
+function closeModal(e) {
+  if (e.target === document.getElementById('searchModal')) {
+    document.getElementById('searchModal').classList.add('hidden');
+  }
 }
 
-function buildDots() {
+// ─── MODE START ──────────────────────────────────────────
+function startMode(mode) {
+  currentMode = mode;
+  const deck = decks[currentDeckIdx];
+  activeCards = deck.shuffleable ? shuffle(deck.cards) : [...deck.cards];
+  studyIndex = 0; score = 0; answered = 0;
+
+  if (mode === 'flashcard') initFlashcard();
+  else if (mode === 'multiple-choice') initMC();
+  else if (mode === 'type') initType();
+  else if (mode === 'name-to-face') initNTF();
+}
+
+function restartMode() { startMode(currentMode); }
+
+// ─── FLASHCARD MODE ──────────────────────────────────────
+let fcFlipped = false;
+
+function initFlashcard() {
+  const shuffleable = decks[currentDeckIdx].shuffleable;
+  document.getElementById('fc-shuffle').classList.toggle('hidden', !shuffleable);
+  buildFCDots();
+  renderFC();
+  showScreen('flashcard');
+}
+
+function buildFCDots() {
+  const dotsEl = document.getElementById('fc-dots');
   dotsEl.innerHTML = '';
-  activeCards.forEach((_, j) => {
+  activeCards.forEach((_, i) => {
     const d = document.createElement('div');
-    d.className = 'dot' + (j === 0 ? ' active' : '');
-    d.onclick = () => goTo(j);
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    d.onclick = () => fcGoTo(i);
     dotsEl.appendChild(d);
   });
 }
 
-function goBack() {
-  flashcardsEl.style.display = 'none';
-  selectionEl.style.display = 'flex';
-  currentDeck = null;
-}
-
-function render() {
-  const p = activeCards[index];
-
+function renderFC() {
+  const p = activeCards[studyIndex];
+  const card = document.getElementById('fc-card');
   card.style.transition = 'none';
   card.classList.remove('flipped');
-  flipped = false;
+  fcFlipped = false;
   requestAnimationFrame(() => requestAnimationFrame(() => { card.style.transition = ''; }));
 
+  const photoEl = document.getElementById('fc-photo');
+  const frontEl = document.getElementById('fc-front');
+  let ni = frontEl.querySelector('.no-image');
   if (p.image) {
-    photo.src = p.image;
-    photo.style.display = 'block';
-    const existing = front.querySelector('.no-image');
-    if (existing) existing.remove();
+    photoEl.src = p.image; photoEl.style.display = 'block';
+    if (ni) ni.remove();
   } else {
-    photo.style.display = 'none';
-    let ni = front.querySelector('.no-image');
-    if (!ni) {
-      ni = document.createElement('div');
-      ni.className = 'no-image';
-      ni.textContent = '👤';
-      front.insertBefore(ni, front.querySelector('.flip-hint'));
-    }
+    photoEl.style.display = 'none';
+    if (!ni) { ni = document.createElement('div'); ni.className = 'no-image'; ni.textContent = '👤'; frontEl.insertBefore(ni, frontEl.querySelector('.flip-hint')); }
   }
-
-  bCompany.textContent = p.company;
-  bName.textContent = p.name;
-  bTitle.textContent = p.title;
-  currentEl.textContent = index + 1;
-  prevBtn.disabled = index === 0;
-  nextBtn.disabled = index === activeCards.length - 1;
-
-  dotsEl.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === index));
-  const activeDot = dotsEl.children[index];
-  if (activeDot) activeDot.scrollIntoView({ block: 'nearest', inline: 'center' });
+  document.getElementById('fc-company').textContent = p.company;
+  document.getElementById('fc-name').textContent = p.name;
+  document.getElementById('fc-title').textContent = p.title;
+  document.getElementById('fc-meta').textContent = `${studyIndex + 1} / ${activeCards.length}`;
+  document.getElementById('fc-prev').disabled = studyIndex === 0;
+  document.getElementById('fc-next').disabled = studyIndex === activeCards.length - 1;
+  document.getElementById('fc-progress').style.width = ((studyIndex + 1) / activeCards.length * 100) + '%';
+  document.querySelectorAll('#fc-dots .dot').forEach((d, i) => d.classList.toggle('active', i === studyIndex));
+  const ad = document.getElementById('fc-dots').children[studyIndex];
+  if (ad) ad.scrollIntoView({ block: 'nearest', inline: 'center' });
 }
 
-function flipCard() {
-  flipped = !flipped;
-  card.classList.toggle('flipped', flipped);
+function flipCard() { fcFlipped = !fcFlipped; document.getElementById('fc-card').classList.toggle('flipped', fcFlipped); }
+function fcGo(dir) { fcGoTo(studyIndex + dir); }
+function fcGoTo(i) { if (i < 0 || i >= activeCards.length) return; studyIndex = i; renderFC(); }
+function fcShuffle() { activeCards = shuffle(decks[currentDeckIdx].cards); studyIndex = 0; buildFCDots(); renderFC(); }
+
+// ─── MULTIPLE CHOICE ────────────────────────────────────
+function initMC() { studyIndex = 0; score = 0; answered = 0; renderMC(); showScreen('multiple-choice'); }
+
+function renderMC() {
+  if (studyIndex >= activeCards.length) { showResults(); return; }
+  const p = activeCards[studyIndex];
+  document.getElementById('mc-meta').textContent = `${studyIndex + 1} / ${activeCards.length}`;
+  document.getElementById('mc-score').textContent = `Score: ${score} / ${answered}`;
+  document.getElementById('mc-progress').style.width = (studyIndex / activeCards.length * 100) + '%';
+  document.getElementById('mc-next').style.display = 'none';
+
+  const imgEl = document.getElementById('mc-photo');
+  setImg(imgEl, p.image);
+  if (!p.image) imgEl.alt = '👤';
+
+  // Build 4 options: correct + 3 random wrong
+  const others = activeCards.filter((_, i) => i !== studyIndex);
+  const wrongs = shuffle(others).slice(0, 3);
+  const options = shuffle([p, ...wrongs]);
+
+  const optsEl = document.getElementById('mc-options');
+  optsEl.innerHTML = '';
+  options.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'mc-opt';
+    btn.textContent = opt.name;
+    btn.onclick = () => mcAnswer(btn, opt.name === p.name, p.name);
+    optsEl.appendChild(btn);
+  });
 }
 
-function go(dir) { goTo(index + dir); }
-
-function goTo(i) {
-  if (!currentDeck || i < 0 || i >= activeCards.length) return;
-  index = i;
-  render();
+function mcAnswer(btn, correct, correctName) {
+  document.querySelectorAll('.mc-opt').forEach(b => {
+    b.disabled = true;
+    if (b.textContent === correctName) b.classList.add('correct');
+  });
+  if (!correct) btn.classList.add('wrong');
+  answered++;
+  if (correct) score++;
+  document.getElementById('mc-score').textContent = `Score: ${score} / ${answered}`;
+  document.getElementById('mc-next').style.display = '';
 }
 
+function mcNext() { studyIndex++; renderMC(); }
+
+// ─── TYPE MODE ───────────────────────────────────────────
+function initType() {
+  studyIndex = 0; score = 0; answered = 0;
+  renderType();
+  showScreen('type');
+  document.getElementById('type-input').focus();
+}
+
+function renderType() {
+  if (studyIndex >= activeCards.length) { showResults(); return; }
+  const p = activeCards[studyIndex];
+  document.getElementById('type-meta').textContent = `${studyIndex + 1} / ${activeCards.length}`;
+  document.getElementById('type-score').textContent = `Score: ${score} / ${answered}`;
+  document.getElementById('type-progress').style.width = (studyIndex / activeCards.length * 100) + '%';
+
+  const imgEl = document.getElementById('type-photo');
+  setImg(imgEl, p.image);
+
+  const inp = document.getElementById('type-input');
+  inp.value = ''; inp.className = 'type-input'; inp.disabled = false;
+  document.getElementById('type-feedback').textContent = '';
+  document.getElementById('type-feedback').className = 'type-feedback';
+  const submitBtn = document.getElementById('type-submit');
+  submitBtn.textContent = 'Check'; submitBtn.onclick = typeCheck;
+  setTimeout(() => inp.focus(), 100);
+}
+
+function typeCheck() {
+  const p = activeCards[studyIndex];
+  const inp = document.getElementById('type-input');
+  const val = inp.value.trim().toLowerCase();
+  const correct = p.name.toLowerCase();
+  // Accept if input matches first name, last name, or full name
+  const parts = correct.split(/\s+/);
+  const isCorrect = val === correct || parts.some(part => part.length > 2 && val === part) ||
+    correct.includes(val) && val.length > 3;
+
+  inp.disabled = true;
+  answered++;
+  const fb = document.getElementById('type-feedback');
+  if (isCorrect) {
+    score++; inp.className = 'type-input correct';
+    fb.textContent = '✓ Correct!'; fb.className = 'type-feedback correct';
+  } else {
+    inp.className = 'type-input wrong';
+    fb.textContent = `✗ ${p.name}`; fb.className = 'type-feedback wrong';
+  }
+  document.getElementById('type-score').textContent = `Score: ${score} / ${answered}`;
+  const submitBtn = document.getElementById('type-submit');
+  submitBtn.textContent = studyIndex < activeCards.length - 1 ? 'Next →' : 'See Results';
+  submitBtn.onclick = () => { studyIndex++; renderType(); };
+}
+
+document.getElementById('type-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    if (!document.getElementById('type-input').disabled) typeCheck();
+    else { studyIndex++; renderType(); }
+  }
+});
+
+// ─── NAME → FACE MODE ────────────────────────────────────
+function initNTF() { studyIndex = 0; score = 0; answered = 0; renderNTF(); showScreen('name-to-face'); }
+
+function renderNTF() {
+  if (studyIndex >= activeCards.length) { showResults(); return; }
+  const p = activeCards[studyIndex];
+  document.getElementById('ntf-meta').textContent = `${studyIndex + 1} / ${activeCards.length}`;
+  document.getElementById('ntf-score').textContent = `Score: ${score} / ${answered}`;
+  document.getElementById('ntf-progress').style.width = (studyIndex / activeCards.length * 100) + '%';
+  document.getElementById('ntf-next').style.display = 'none';
+  document.getElementById('ntf-name').textContent = p.name;
+  document.getElementById('ntf-title').textContent = p.title;
+
+  const others = activeCards.filter((_, i) => i !== studyIndex);
+  const wrongs = shuffle(others).slice(0, 3);
+  const options = shuffle([p, ...wrongs]);
+
+  const optsEl = document.getElementById('ntf-options');
+  optsEl.innerHTML = '';
+  options.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'mc-opt';
+    btn.textContent = opt.company;
+    btn.onclick = () => ntfAnswer(btn, opt.company === p.company, p.company);
+    optsEl.appendChild(btn);
+  });
+}
+
+function ntfAnswer(btn, correct, correctCompany) {
+  document.querySelectorAll('#ntf-options .mc-opt').forEach(b => {
+    b.disabled = true;
+    if (b.textContent === correctCompany) b.classList.add('correct');
+  });
+  if (!correct) btn.classList.add('wrong');
+  answered++;
+  if (correct) score++;
+  document.getElementById('ntf-score').textContent = `Score: ${score} / ${answered}`;
+  document.getElementById('ntf-next').style.display = '';
+}
+
+function ntfNext() { studyIndex++; renderNTF(); }
+
+// ─── RESULTS ─────────────────────────────────────────────
+function showResults() {
+  const pct = Math.round(score / answered * 100) || 0;
+  document.getElementById('res-score').textContent = `${score}/${answered}`;
+  document.getElementById('res-label').textContent = pct >= 80 ? '🎉 Great job!' : pct >= 50 ? 'Keep practicing!' : 'Keep at it!';
+  document.getElementById('res-sub').textContent = `${pct}% correct on ${decks[currentDeckIdx].name}`;
+  showScreen('results');
+}
+
+// ─── KEYBOARD ────────────────────────────────────────────
 document.addEventListener('keydown', e => {
-  if (!currentDeck) return;
-  if (e.key === 'ArrowLeft') go(-1);
-  else if (e.key === 'ArrowRight') go(1);
-  else if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flipCard(); }
+  const active = document.querySelector('.screen.active');
+  if (!active) return;
+  const id = active.id;
+  if (id === 'screen-flashcard') {
+    if (e.key === 'ArrowLeft') fcGo(-1);
+    else if (e.key === 'ArrowRight') fcGo(1);
+    else if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flipCard(); }
+  }
 });
 </script>
 </body>
