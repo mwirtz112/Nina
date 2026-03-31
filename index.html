@@ -579,7 +579,7 @@
 <!-- ─── MULTIPLE CHOICE SCREEN ─── -->
 <div id="screen-multiple-choice" class="screen">
   <div class="study-topbar">
-    <button class="back-btn" onclick="showScreen('mode')">← Back</button>
+    <button class="back-btn" onclick="exitGame()">← Back</button>
     <button class="report-btn" onclick="openIssueModal()">Report Issue</button>
     <div class="study-meta" id="mc-meta"></div>
   </div>
@@ -595,7 +595,7 @@
 <!-- ─── TYPING SCREEN ─── -->
 <div id="screen-type" class="screen">
   <div class="study-topbar">
-    <button class="back-btn" onclick="showScreen('mode')">← Back</button>
+    <button class="back-btn" onclick="exitGame()">← Back</button>
     <button class="report-btn" onclick="openIssueModal()">Report Issue</button>
     <div class="study-meta" id="type-meta"></div>
   </div>
@@ -615,7 +615,7 @@
 <!-- ─── NAME→FACE SCREEN ─── -->
 <div id="screen-name-to-face" class="screen">
   <div class="study-topbar">
-    <button class="back-btn" onclick="showScreen('mode')">← Back</button>
+    <button class="back-btn" onclick="exitGame()">← Back</button>
     <button class="report-btn" onclick="openIssueModal()">Report Issue</button>
     <div class="study-meta" id="ntf-meta"></div>
   </div>
@@ -1455,6 +1455,11 @@ async function saveScore() {
     correct: score,
     total: answered
   });
+}
+
+async function exitGame() {
+  await saveScore();
+  showScreen('mode');
 }
 
 // ─── LEADERBOARD ─────────────────────────────────────────
