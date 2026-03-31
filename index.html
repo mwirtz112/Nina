@@ -334,6 +334,50 @@
       cursor: pointer; font-size: 14px; transition: color 0.2s, border-color 0.2s;
     }
     .modal-close:hover { color: #fff; border-color: #555; }
+
+    /* ─── COMPANY FILTER ─── */
+    .company-filter { width: 100%; margin-bottom: 20px; }
+    .company-filter-toggle {
+      width: 100%; padding: 12px 16px;
+      border-radius: 12px; border: 1px solid #2a2a40;
+      background: #1a1a28; color: #fff;
+      font-size: 14px; cursor: pointer;
+      display: flex; align-items: center; justify-content: space-between;
+      transition: border-color 0.2s;
+    }
+    .company-filter-toggle:hover { border-color: #7c6af5; }
+    .company-filter-toggle.open { border-color: #7c6af5; border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+    .cf-toggle-left { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
+    .cf-toggle-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: #555; }
+    .cf-toggle-count { font-size: 13px; color: #fff; }
+    .cf-arrow { font-size: 12px; color: #555; transition: transform 0.2s; }
+    .company-filter-toggle.open .cf-arrow { transform: rotate(180deg); }
+    .company-filter-list {
+      border: 1px solid #7c6af5; border-top: none;
+      border-bottom-left-radius: 12px; border-bottom-right-radius: 12px;
+      background: #1a1a28; max-height: 220px; overflow-y: auto;
+      display: none;
+    }
+    .company-filter-list.open { display: block; }
+    .company-filter-actions {
+      display: flex; gap: 12px; padding: 9px 14px;
+      border-bottom: 1px solid #2a2a40;
+    }
+    .cfa-btn {
+      font-size: 12px; color: #7c6af5; background: none; border: none;
+      cursor: pointer; padding: 0;
+    }
+    .cfa-btn:hover { text-decoration: underline; }
+    .company-filter-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 14px; cursor: pointer;
+      transition: background 0.15s;
+      border-bottom: 1px solid #1f1f2e;
+    }
+    .company-filter-item:last-child { border-bottom: none; }
+    .company-filter-item:hover { background: #22223a; }
+    .company-filter-item input[type="checkbox"] { accent-color: #7c6af5; width: 15px; height: 15px; cursor: pointer; flex-shrink: 0; }
+    .company-filter-item label { font-size: 13px; cursor: pointer; flex: 1; }
   </style>
 </head>
 <body>
@@ -364,6 +408,23 @@
     <h2>Choose a study mode</h2>
     <p>How would you like to study this deck?</p>
   </div>
+  <div id="company-filter" class="company-filter" style="display:none">
+    <button class="company-filter-toggle" id="cf-toggle" onclick="toggleCompanyFilter()">
+      <div class="cf-toggle-left">
+        <span class="cf-toggle-title">Filter by company</span>
+        <span class="cf-toggle-count" id="cf-label">All companies</span>
+      </div>
+      <span class="cf-arrow">▾</span>
+    </button>
+    <div class="company-filter-list" id="cf-list">
+      <div class="company-filter-actions">
+        <button class="cfa-btn" onclick="cfSelectAll()">Select all</button>
+        <button class="cfa-btn" onclick="cfSelectNone()">Clear all</button>
+      </div>
+      <div id="cf-checkboxes"></div>
+    </div>
+  </div>
+
   <div class="mode-grid">
     <div class="mode-card" onclick="startMode('flashcard')">
       <div class="mode-icon">🃏</div>
@@ -526,7 +587,7 @@ function parseCSV(text) {
     name: r[1] || '',
     title: r[2] || '',
     image: r[3] || ''
-  })).filter(c => c.name);
+  })).filter(c => c.name && c.image.startsWith('https'));
 }
 
 // ─── DATA ───────────────────────────────────────────────
@@ -797,10 +858,81 @@ function renderDeckButtons() {
 }
 renderDeckButtons();
 
+let selectedCompanies = new Set();
+
 function selectDeck(i) {
   currentDeckIdx = i;
   document.getElementById('modeDeckLabel').textContent = decks[i].name;
+
+  const filterEl = document.getElementById('company-filter');
+  if (i === 2) {
+    const companies = [...new Set(decks[i].cards.map(c => c.company))].sort();
+    selectedCompanies = new Set(companies);
+    const checkboxesEl = document.getElementById('cf-checkboxes');
+    checkboxesEl.innerHTML = '';
+    companies.forEach((co, idx) => {
+      const item = document.createElement('div');
+      item.className = 'company-filter-item';
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.id = 'cf-co-' + idx;
+      cb.checked = true;
+      cb.dataset.company = co;
+      const lbl = document.createElement('label');
+      lbl.htmlFor = 'cf-co-' + idx;
+      lbl.textContent = co;
+      item.appendChild(cb);
+      item.appendChild(lbl);
+      item.addEventListener('click', e => {
+        if (e.target !== cb) { cb.checked = !cb.checked; }
+        if (cb.checked) selectedCompanies.add(co);
+        else selectedCompanies.delete(co);
+        updateCFLabel();
+      });
+      checkboxesEl.appendChild(item);
+    });
+    updateCFLabel();
+    document.getElementById('cf-list').classList.remove('open');
+    document.getElementById('cf-toggle').classList.remove('open');
+    filterEl.style.display = 'block';
+  } else {
+    filterEl.style.display = 'none';
+    selectedCompanies = new Set();
+  }
+
   showScreen('mode');
+}
+
+function toggleCompanyFilter() {
+  const list = document.getElementById('cf-list');
+  const toggle = document.getElementById('cf-toggle');
+  const isOpen = list.classList.toggle('open');
+  toggle.classList.toggle('open', isOpen);
+}
+
+function cfSelectAll() {
+  document.querySelectorAll('#cf-checkboxes input[type="checkbox"]').forEach(cb => {
+    cb.checked = true;
+    selectedCompanies.add(cb.dataset.company);
+  });
+  updateCFLabel();
+}
+
+function cfSelectNone() {
+  document.querySelectorAll('#cf-checkboxes input[type="checkbox"]').forEach(cb => {
+    cb.checked = false;
+    selectedCompanies.delete(cb.dataset.company);
+  });
+  updateCFLabel();
+}
+
+function updateCFLabel() {
+  const total = new Set(decks[currentDeckIdx].cards.map(c => c.company)).size;
+  const sel = selectedCompanies.size;
+  const label = document.getElementById('cf-label');
+  if (sel === 0) label.textContent = 'No companies selected';
+  else if (sel === total) label.textContent = 'All companies';
+  else label.textContent = sel + ' of ' + total + ' companies';
 }
 
 // ─── SEARCH ─────────────────────────────────────────────
@@ -872,7 +1004,11 @@ function closeModal(e) {
 function startMode(mode) {
   currentMode = mode;
   const deck = decks[currentDeckIdx];
-  activeCards = deck.shuffleable ? shuffle(deck.cards) : [...deck.cards];
+  let cards = deck.cards;
+  if (currentDeckIdx === 2 && selectedCompanies.size > 0) {
+    cards = cards.filter(c => selectedCompanies.has(c.company));
+  }
+  activeCards = deck.shuffleable ? shuffle(cards) : [...cards];
   studyIndex = 0; score = 0; answered = 0;
 
   if (mode === 'flashcard') initFlashcard();
