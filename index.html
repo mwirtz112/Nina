@@ -1485,8 +1485,8 @@ async function showLeaderboard() {
   }
 
   const ranked = Object.entries(users)
-    .map(([name, u]) => ({ name, pct: Math.round(u.wc / u.wt * 100), games: u.games }))
-    .sort((a, b) => b.pct - a.pct || b.games - a.games);
+    .map(([name, u]) => ({ name, pct: Math.round(u.wc / u.wt * 100), pts: Math.round(u.wc) }))
+    .sort((a, b) => b.pct - a.pct || b.pts - a.pts);
 
   if (ranked.length === 0) {
     content.innerHTML = '<div class="lb-empty">No scored games yet. Play Multiple Choice, Type the Name, or Name → Face to earn a score!</div>';
@@ -1497,15 +1497,15 @@ async function showLeaderboard() {
   content.innerHTML = `
     <table class="lb-table">
       <thead><tr>
-        <th>#</th><th>Name</th><th style="text-align:center">Games</th><th style="text-align:right">Score</th>
+        <th>#</th><th>Name</th><th style="text-align:right">Accuracy</th><th style="text-align:right">Points</th>
       </tr></thead>
       <tbody>
         ${ranked.map((u, i) => `
           <tr class="${u.name === currentUser ? 'lb-you' : ''}">
             <td class="lb-rank">${medals[i] || (i + 1)}</td>
             <td class="lb-username">${u.name}${u.name === currentUser ? ' <span style="font-size:11px;color:#7c6af5">(you)</span>' : ''}</td>
-            <td class="lb-games">${u.games}</td>
             <td class="lb-score">${u.pct}%</td>
+            <td class="lb-score">${u.pts}</td>
           </tr>`).join('')}
       </tbody>
     </table>
