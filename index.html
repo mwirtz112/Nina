@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SWE 2026 Faces</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -378,12 +379,107 @@
     .company-filter-item:hover { background: #22223a; }
     .company-filter-item input[type="checkbox"] { accent-color: #7c6af5; width: 15px; height: 15px; cursor: pointer; flex-shrink: 0; }
     .company-filter-item label { font-size: 13px; cursor: pointer; flex: 1; }
+
+    /* ─── TOP BAR ─── */
+    .top-bar { display: flex; align-items: center; justify-content: space-between; width: 100%; margin-bottom: 20px; }
+    .tb-btn {
+      background: none; border: 1px solid #2a2a40; color: #888;
+      font-size: 13px; padding: 6px 14px; border-radius: 20px;
+      cursor: pointer; white-space: nowrap;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .tb-btn:hover { color: #fff; border-color: #555; }
+    .tb-btn.highlight { color: #7c6af5; border-color: rgba(124,106,245,0.4); }
+    .tb-btn.highlight:hover { border-color: #7c6af5; }
+    .tb-user { font-size: 13px; color: #7c6af5; display: flex; align-items: center; gap: 8px; }
+
+    /* ─── LOGIN MODAL ─── */
+    .login-modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(4px); z-index: 300;
+      display: flex; align-items: center; justify-content: center; padding: 24px;
+    }
+    .login-modal-overlay.hidden { display: none; }
+    .login-modal {
+      background: #1a1a28; border: 1px solid #2a2a40; border-radius: 20px;
+      padding: 32px 28px; max-width: 380px; width: 100%;
+      display: flex; flex-direction: column; gap: 16px;
+    }
+    .login-modal h2 { font-size: 22px; font-weight: 700; text-align: center; }
+    .login-subtitle { font-size: 13px; color: #888; text-align: center; line-height: 1.6; }
+    .login-modal input {
+      width: 100%; padding: 13px 16px; border-radius: 12px;
+      border: 1px solid #2a2a40; background: #0f0f13;
+      color: #fff; font-size: 15px; outline: none;
+      transition: border-color 0.2s; text-align: center;
+    }
+    .login-modal input:focus { border-color: #7c6af5; }
+    .login-modal-actions { display: flex; gap: 10px; }
+    .login-modal-actions button { flex: 1; }
+
+    /* ─── LEADERBOARD SCREEN ─── */
+    .lb-header { text-align: center; margin-bottom: 28px; }
+    .lb-header h2 { font-size: 24px; font-weight: 700; }
+    .lb-header p { font-size: 14px; color: #666; margin-top: 5px; }
+    .lb-table { width: 100%; border-collapse: collapse; }
+    .lb-table th {
+      font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em;
+      color: #555; padding: 8px 12px; text-align: left; border-bottom: 1px solid #2a2a40;
+    }
+    .lb-table td { padding: 12px 12px; border-bottom: 1px solid #1f1f2e; font-size: 14px; }
+    .lb-table tr:last-child td { border-bottom: none; }
+    .lb-rank { font-size: 16px; font-weight: 700; color: #7c6af5; width: 40px; }
+    .lb-username { font-weight: 600; }
+    .lb-games { color: #666; font-size: 13px; text-align: center; }
+    .lb-score { font-weight: 700; color: #7c6af5; text-align: right; }
+    .lb-empty { text-align: center; color: #555; padding: 40px 20px; font-size: 14px; line-height: 1.6; }
+    .lb-you { background: rgba(124,106,245,0.07); }
+    .lb-note { margin-top: 14px; font-size: 12px; color: #444; text-align: center; }
+
+    /* ─── REPORT ISSUE ─── */
+    .report-btn {
+      background: none; border: 1px solid #2a2a40; color: #555;
+      font-size: 12px; padding: 5px 12px; border-radius: 20px;
+      cursor: pointer; white-space: nowrap; flex-shrink: 0;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .report-btn:hover { color: #ef4444; border-color: rgba(239,68,68,0.5); }
+    .issue-modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(4px); z-index: 300;
+      display: flex; align-items: center; justify-content: center; padding: 24px;
+    }
+    .issue-modal-overlay.hidden { display: none; }
+    .issue-modal {
+      background: #1a1a28; border: 1px solid #2a2a40; border-radius: 20px;
+      padding: 28px 24px; max-width: 400px; width: 100%;
+      display: flex; flex-direction: column; gap: 14px;
+    }
+    .issue-modal h3 { font-size: 18px; font-weight: 700; }
+    .issue-card-info {
+      background: #0f0f13; border-radius: 10px; padding: 12px 14px;
+      font-size: 13px; color: #888; line-height: 1.7;
+    }
+    .issue-card-info strong { color: #bbb; }
+    .issue-modal textarea {
+      width: 100%; padding: 12px 14px; border-radius: 12px;
+      border: 1px solid #2a2a40; background: #0f0f13;
+      color: #fff; font-size: 14px; outline: none; resize: vertical;
+      min-height: 90px; font-family: inherit; transition: border-color 0.2s;
+    }
+    .issue-modal textarea:focus { border-color: #7c6af5; }
+    .issue-modal-actions { display: flex; gap: 10px; }
+    .issue-modal-actions button { flex: 1; }
   </style>
 </head>
 <body>
 
 <!-- ─── HOME SCREEN ─── -->
 <div id="screen-home" class="screen active">
+  <div class="top-bar">
+    <button class="tb-btn highlight" onclick="showLeaderboard()">🏆 Leaderboard</button>
+    <div id="login-area"></div>
+  </div>
   <div class="home-header">
     <h1>SWE 2026 Faces</h1>
     <p>Choose a deck to study</p>
@@ -453,6 +549,7 @@
 <div id="screen-flashcard" class="screen">
   <div class="study-topbar">
     <button class="back-btn" onclick="showScreen('mode')">← Back</button>
+    <button class="report-btn" onclick="openIssueModal()">Report Issue</button>
     <div class="study-meta" id="fc-meta"></div>
   </div>
   <div class="progress-bar-wrap"><div class="progress-bar-fill" id="fc-progress"></div></div>
@@ -483,6 +580,7 @@
 <div id="screen-multiple-choice" class="screen">
   <div class="study-topbar">
     <button class="back-btn" onclick="showScreen('mode')">← Back</button>
+    <button class="report-btn" onclick="openIssueModal()">Report Issue</button>
     <div class="study-meta" id="mc-meta"></div>
   </div>
   <div class="progress-bar-wrap"><div class="progress-bar-fill" id="mc-progress"></div></div>
@@ -498,6 +596,7 @@
 <div id="screen-type" class="screen">
   <div class="study-topbar">
     <button class="back-btn" onclick="showScreen('mode')">← Back</button>
+    <button class="report-btn" onclick="openIssueModal()">Report Issue</button>
     <div class="study-meta" id="type-meta"></div>
   </div>
   <div class="progress-bar-wrap"><div class="progress-bar-fill" id="type-progress"></div></div>
@@ -517,6 +616,7 @@
 <div id="screen-name-to-face" class="screen">
   <div class="study-topbar">
     <button class="back-btn" onclick="showScreen('mode')">← Back</button>
+    <button class="report-btn" onclick="openIssueModal()">Report Issue</button>
     <div class="study-meta" id="ntf-meta"></div>
   </div>
   <div class="progress-bar-wrap"><div class="progress-bar-fill" id="ntf-progress"></div></div>
@@ -544,6 +644,44 @@
       <button class="btn-primary" onclick="restartMode()">Try Again</button>
       <button class="btn-secondary" onclick="showScreen('mode')">Change Mode</button>
       <button class="btn-secondary" onclick="showScreen('home')">Home</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── LEADERBOARD SCREEN ─── -->
+<div id="screen-leaderboard" class="screen">
+  <div class="study-topbar">
+    <button class="back-btn" onclick="showScreen('home')">← Back</button>
+  </div>
+  <div class="lb-header">
+    <h2>🏆 Leaderboard</h2>
+    <p>Weighted scores across all game modes</p>
+  </div>
+  <div id="lb-content" style="width:100%"></div>
+</div>
+
+<!-- ─── LOGIN MODAL ─── -->
+<div class="login-modal-overlay hidden" id="loginModal">
+  <div class="login-modal">
+    <h2>Log In</h2>
+    <p class="login-subtitle">Please use your real name — this runs on the honor system.<br>Don't log in as someone else.</p>
+    <input type="text" id="login-username-input" placeholder="Your full name…" autocomplete="off" autocapitalize="words" />
+    <div class="login-modal-actions">
+      <button class="btn-secondary" onclick="closeLoginModal()">Cancel</button>
+      <button class="btn-primary" onclick="submitLogin()">Log In</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── REPORT ISSUE MODAL ─── -->
+<div class="issue-modal-overlay hidden" id="issueModal">
+  <div class="issue-modal">
+    <h3>Report an Issue</h3>
+    <div class="issue-card-info" id="issue-card-info"></div>
+    <textarea id="issue-message" placeholder="Describe the issue — wrong photo, incorrect name, bad title…"></textarea>
+    <div class="issue-modal-actions">
+      <button class="btn-secondary" onclick="closeIssueModal()">Cancel</button>
+      <button class="btn-primary" onclick="submitIssue()">Submit</button>
     </div>
   </div>
 </div>
@@ -1248,8 +1386,177 @@ function showResults() {
   document.getElementById('res-score').textContent = `${score}/${answered}`;
   document.getElementById('res-label').textContent = pct >= 80 ? '🎉 Great job!' : pct >= 50 ? 'Keep practicing!' : 'Keep at it!';
   document.getElementById('res-sub').textContent = `${pct}% correct on ${decks[currentDeckIdx].name}`;
+  saveScore();
   showScreen('results');
 }
+
+// ─── SUPABASE ────────────────────────────────────────────
+const _sb = supabase.createClient(
+  'https://qqraxnokoazonoessiup.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFxcmF4bm9rb2F6b25vZXNzaXVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5NzA0MTIsImV4cCI6MjA5MDU0NjQxMn0.YOUcZDJx7e4c5JZi7pJLMK6ih2jodpCTXo5NCAYzc2k'
+);
+
+// ─── LOGIN ───────────────────────────────────────────────
+let currentUser = localStorage.getItem('nina_username') || null;
+
+function updateLoginArea() {
+  const area = document.getElementById('login-area');
+  if (currentUser) {
+    area.innerHTML = `<span class="tb-user">👤 ${currentUser}<button class="tb-btn" onclick="logOut()">Log Out</button></span>`;
+  } else {
+    area.innerHTML = `<button class="tb-btn" onclick="openLoginModal()">Log In</button>`;
+  }
+}
+
+function openLoginModal() {
+  document.getElementById('loginModal').classList.remove('hidden');
+  document.getElementById('login-username-input').value = currentUser || '';
+  setTimeout(() => document.getElementById('login-username-input').focus(), 50);
+}
+
+function closeLoginModal() {
+  document.getElementById('loginModal').classList.add('hidden');
+}
+
+function submitLogin() {
+  const val = document.getElementById('login-username-input').value.trim();
+  if (!val) return;
+  currentUser = val;
+  localStorage.setItem('nina_username', val);
+  closeLoginModal();
+  updateLoginArea();
+}
+
+function logOut() {
+  currentUser = null;
+  localStorage.removeItem('nina_username');
+  updateLoginArea();
+}
+
+document.getElementById('login-username-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') submitLogin();
+  if (e.key === 'Escape') closeLoginModal();
+});
+document.getElementById('loginModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('loginModal')) closeLoginModal();
+});
+
+updateLoginArea();
+
+// ─── SCORE WEIGHTS ───────────────────────────────────────
+const MODE_WEIGHTS = { 'type': 3, 'multiple-choice': 2, 'name-to-face': 1.5 };
+
+async function saveScore() {
+  if (!currentUser || !currentMode || currentMode === 'flashcard' || answered === 0) return;
+  await _sb.from('game_results').insert({
+    username: currentUser,
+    deck_name: decks[currentDeckIdx].name,
+    mode: currentMode,
+    correct: score,
+    total: answered
+  });
+}
+
+// ─── LEADERBOARD ─────────────────────────────────────────
+async function showLeaderboard() {
+  showScreen('leaderboard');
+  const content = document.getElementById('lb-content');
+  content.innerHTML = '<div class="lb-empty">Loading…</div>';
+
+  const { data, error } = await _sb.from('game_results').select('username, mode, correct, total');
+  if (error || !data || data.length === 0) {
+    content.innerHTML = '<div class="lb-empty">No scores yet — play a game to get on the board!</div>';
+    return;
+  }
+
+  const users = {};
+  for (const row of data) {
+    const w = MODE_WEIGHTS[row.mode];
+    if (!w) continue;
+    if (!users[row.username]) users[row.username] = { wc: 0, wt: 0, games: 0 };
+    users[row.username].wc += row.correct * w;
+    users[row.username].wt += row.total * w;
+    users[row.username].games++;
+  }
+
+  const ranked = Object.entries(users)
+    .map(([name, u]) => ({ name, pct: Math.round(u.wc / u.wt * 100), games: u.games }))
+    .sort((a, b) => b.pct - a.pct || b.games - a.games);
+
+  if (ranked.length === 0) {
+    content.innerHTML = '<div class="lb-empty">No scored games yet. Play Multiple Choice, Type the Name, or Name → Face to earn a score!</div>';
+    return;
+  }
+
+  const medals = ['🥇', '🥈', '🥉'];
+  content.innerHTML = `
+    <table class="lb-table">
+      <thead><tr>
+        <th>#</th><th>Name</th><th style="text-align:center">Games</th><th style="text-align:right">Score</th>
+      </tr></thead>
+      <tbody>
+        ${ranked.map((u, i) => `
+          <tr class="${u.name === currentUser ? 'lb-you' : ''}">
+            <td class="lb-rank">${medals[i] || (i + 1)}</td>
+            <td class="lb-username">${u.name}${u.name === currentUser ? ' <span style="font-size:11px;color:#7c6af5">(you)</span>' : ''}</td>
+            <td class="lb-games">${u.games}</td>
+            <td class="lb-score">${u.pct}%</td>
+          </tr>`).join('')}
+      </tbody>
+    </table>
+    <div class="lb-note">Weights: Type the Name 3× · Multiple Choice 2× · Name → Face 1.5×</div>`;
+}
+
+// ─── REPORT ISSUE ────────────────────────────────────────
+function openIssueModal() {
+  const card = activeCards[studyIndex];
+  if (!card) return;
+  const modeNames = { 'flashcard': 'Flashcards', 'multiple-choice': 'Multiple Choice', 'type': 'Type the Name', 'name-to-face': 'Name → Face' };
+  document.getElementById('issue-card-info').innerHTML =
+    `<strong>Game:</strong> ${modeNames[currentMode] || currentMode}<br>` +
+    `<strong>Name:</strong> ${card.name}<br>` +
+    `<strong>Company:</strong> ${card.company}<br>` +
+    `<strong>Title:</strong> ${card.title}`;
+  document.getElementById('issue-message').value = '';
+  document.getElementById('issueModal').classList.remove('hidden');
+  setTimeout(() => document.getElementById('issue-message').focus(), 50);
+}
+
+function closeIssueModal() {
+  document.getElementById('issueModal').classList.add('hidden');
+}
+
+async function submitIssue() {
+  const msg = document.getElementById('issue-message').value.trim();
+  if (!msg) return;
+  const card = activeCards[studyIndex];
+  const submitBtn = document.querySelector('#issueModal .btn-primary');
+  submitBtn.textContent = 'Submitting…';
+  submitBtn.disabled = true;
+  const { error } = await _sb.from('issues').insert({
+    username: currentUser || null,
+    game_mode: currentMode,
+    card_name: card.name,
+    card_company: card.company,
+    card_title: card.title,
+    card_image: card.image || null,
+    message: msg
+  });
+  submitBtn.textContent = 'Submit';
+  submitBtn.disabled = false;
+  if (!error) {
+    closeIssueModal();
+    const toast = document.createElement('div');
+    toast.style.cssText = 'position:fixed;bottom:32px;left:50%;transform:translateX(-50%);background:#22c55e;color:#fff;padding:10px 22px;border-radius:20px;font-size:14px;font-weight:600;z-index:400;pointer-events:none;transition:opacity 0.5s';
+    toast.textContent = '✓ Issue reported — thank you!';
+    document.body.appendChild(toast);
+    setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 500); }, 2500);
+  }
+}
+
+document.getElementById('issueModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('issueModal')) closeIssueModal();
+});
 
 // ─── KEYBOARD ────────────────────────────────────────────
 document.addEventListener('keydown', e => {
